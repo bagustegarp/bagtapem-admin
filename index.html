@@ -13,6 +13,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+    <!-- SheetJS CDN (Untuk Export XLSX Asli & Rapi) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
@@ -80,9 +83,9 @@
                     </div>
                     
                     <div class="flex items-center space-x-3">
-                        <button onclick="exportToCSV()" class="flex items-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition-all transform hover:-translate-y-0.5">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                            <span class="hidden sm:inline">Export CSV</span>
+                        <button onclick="exportToExcel()" class="flex items-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition-all transform hover:-translate-y-0.5">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Export Excel (.xlsx)</span>
                         </button>
                         <button onclick="logout()" class="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all shadow-sm" title="Keluar">
                             <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -401,20 +404,57 @@
             }
         }
 
-        function exportToCSV() {
+        // EXPORT KE EXCEL (.XLSX) RAPI BERGARIS DAN TERPISAH PER KOLOM
+        function exportToExcel() {
             if (pklData.length === 0) { showToast("Tidak ada data untuk di-export.", "error"); return; }
-            let csv = "data:text/csv;charset=utf-8,Ref ID,Kecamatan,Kelurahan,Lokasi,Jumlah Lapak,Tanggal,Data PKL,Keterangan\n";
-            pklData.forEach(row => {
-                const lokasiClean = (row.lokasi || row.jalan || '-').replace(/,/g, " ").replace(/\n/g, " | ");
-                const dataPklClean = (row.datapkl || '-').replace(/,/g, " ").replace(/\n/g, " | ");
-                const ketClean = (row.keterangan || '-').replace(/,/g, " ").replace(/\n/g, " ");
-                csv += `${row.id || '-'},${row.kecamatan || '-'},${row.kelurahan || '-'},${lokasiClean},${row.jumlah || 0},${row.waktu || '-'},${dataPklClean},${ketClean}\n`;
+            
+            // 1. Susun header dan data berbentuk array of objects
+            const excelRows = pklData.map((row, idx) => {
+                let formattedWaktu = '-';
+                if(row.waktu) {
+                    formattedWaktu = new Date(row.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                }
+
+                return {
+                    "No": idx + 1,
+                    "Ref ID": row.id || '-',
+                    "Kecamatan": row.kecamatan || '-',
+                    "Kelurahan": row.kelurahan || '-',
+                    "Lokasi / Jalan & RW": (row.lokasi || row.jalan || '-').replace(/\n/g, " | "),
+                    "Jumlah Lapak (Unit)": parseInt(row.jumlah) || 0,
+                    "Tanggal Data": formattedWaktu,
+                    "Rincian Data PKL": (row.datapkl || '-').replace(/\n/g, " | "),
+                    "Keterangan": (row.keterangan || '-').replace(/\n/g, " "),
+                    "Status Dokumentasi": row.dokumentasi ? "Tersedia (Foto Base64 Cloud)" : "Tidak Ada Foto"
+                };
             });
-            const link = document.createElement("a");
-            link.href = encodeURI(csv);
-            link.download = `Rekap_PKL_BAGTAPEM_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
-            showToast("File CSV berhasil diunduh!", "success");
+
+            // 2. Buat sheet Excel
+            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+
+            // 3. Atur lebar kolom otomatis agar tulisan rapi dan tidak terpotong
+            worksheet['!cols'] = [
+                { wch: 6 },   // No
+                { wch: 18 },  // Ref ID
+                { wch: 18 },  // Kecamatan
+                { wch: 18 },  // Kelurahan
+                { wch: 35 },  // Lokasi
+                { wch: 18 },  // Jumlah Lapak
+                { wch: 20 },  // Tanggal
+                { wch: 35 },  // Rincian Data PKL
+                { wch: 30 },  // Keterangan
+                { wch: 25 }   // Dokumentasi
+            ];
+
+            // 4. Buat workbook Excel
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Data PKL BAGTAPEM");
+
+            // 5. Unduh sebagai file .xlsx murni
+            const fileName = `Rekap_Pendataan_PKL_BAGTAPEM_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+
+            showToast("Berhasil terunduh sebagai file Excel (.xlsx) rapi!", "success");
         }
 
         document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
