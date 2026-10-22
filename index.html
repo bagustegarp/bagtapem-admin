@@ -15,29 +15,49 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(203, 213, 225, 0.6); }
-        .watermark-bg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95vw; max-width: 1000px; opacity: 0.03; pointer-events: none; z-index: 0; filter: grayscale(30%); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
+        .glass-panel { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.8); }
+        
+        /* Watermark Logo */
+        .watermark-bg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; max-width: 800px; opacity: 0.15; pointer-events: none; z-index: 0; filter: grayscale(20%); }
+        
+        /* Animated Background Blobs */
+        @keyframes blob { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
+        .animate-blob { animation: blob 8s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+
         ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f5f9; } ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col relative overflow-x-hidden">
+<body class="text-slate-800 min-h-screen flex flex-col justify-between relative overflow-x-hidden bg-slate-50">
 
-    <img src="logo bagtapem.png" alt="Watermark" class="watermark-bg" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Lambang_Kota_Bandung.svg/1200px-Lambang_Kota_Bandung.svg.png'">
+    <!-- Latar Belakang Estetik (Animated Blobs) -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div class="absolute -top-40 -left-10 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div class="absolute top-40 -right-20 w-96 h-96 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-40 left-1/3 w-[30rem] h-[30rem] bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+    </div>
+
+    <!-- Watermark Logo di Tengah -->
+    <img src="logo bagtapem.png" alt="Watermark Bagtapem" class="watermark-bg" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Lambang_Kota_Bandung.svg/1200px-Lambang_Kota_Bandung.svg.png'">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- OVERLAY LOGIN PASSWORD ADMIN -->
-    <div id="login-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="glass-panel bg-white p-8 rounded-3xl max-w-md w-full text-center space-y-6 shadow-2xl">
-            <div class="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
-                <i data-lucide="shield-lock" class="w-8 h-8 text-blue-900"></i>
+    <div id="login-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-300">
+        <div class="glass-panel bg-white/95 p-8 rounded-3xl max-w-md w-full text-center space-y-6 shadow-2xl border border-white">
+            <div class="bg-gradient-to-br from-blue-100 to-blue-200 p-4 rounded-2xl w-20 h-20 mx-auto flex items-center justify-center shadow-inner">
+                <i data-lucide="shield-lock" class="w-10 h-10 text-blue-900"></i>
             </div>
             <div>
-                <h2 class="text-xl font-extrabold text-slate-900">Portal Admin BAGTAPEM</h2>
-                <p class="text-xs text-slate-500 mt-1 font-medium">Masukkan Passcode Operator untuk mengakses database.</p>
+                <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Portal Master BAGTAPEM</h2>
+                <p class="text-xs text-slate-500 mt-1 font-semibold">Masukkan Passcode Operator untuk mengakses database cloud.</p>
             </div>
             <form onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="password" id="admin-pass" placeholder="Password Admin" required class="w-full px-4 py-3 rounded-xl border border-slate-300 text-center text-sm font-bold tracking-widest focus:ring-2 focus:ring-blue-800">
-                <button type="submit" class="w-full py-3 bg-blue-900 hover:bg-slate-900 text-white font-bold rounded-xl shadow-lg transition-all">
+                <input type="password" id="admin-pass" placeholder="Password Admin" required class="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 text-center text-sm font-extrabold tracking-widest focus:ring-2 focus:ring-blue-800 focus:bg-white outline-none transition-all shadow-sm">
+                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-blue-800 to-slate-900 hover:from-slate-900 hover:to-slate-950 text-white font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5">
                     Masuk ke Dashboard
                 </button>
             </form>
@@ -45,26 +65,26 @@
     </div>
 
     <!-- MAIN DASHBOARD ADMIN -->
-    <div id="dashboard-content" class="hidden flex-col min-h-screen">
-        <header class="glass-panel sticky top-0 z-40 shadow-sm border-b border-slate-200">
+    <div id="dashboard-content" class="hidden flex-col min-h-screen relative z-10">
+        <header class="glass-panel sticky top-0 z-40 shadow-sm border-b border-slate-200/80">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-20">
                     <div class="flex items-center space-x-4">
-                        <div class="bg-blue-900 p-2 rounded-xl shadow-md flex items-center justify-center">
-                            <i data-lucide="layout-dashboard" class="w-6 h-6 text-white"></i>
+                        <div class="bg-gradient-to-br from-blue-700 to-blue-900 p-3 rounded-2xl shadow-md text-white">
+                            <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
                         </div>
                         <div>
-                            <h1 class="text-xl font-extrabold text-slate-900 leading-tight">MASTER DASHBOARD</h1>
-                            <p class="text-xs font-bold text-blue-800 tracking-wide">Rekapitulasi Data PKL Mandiri BAGTAPEM (Real-time Cloud)</p>
+                            <h1 class="text-xl font-black text-slate-900 leading-tight tracking-tight">MASTER DASHBOARD</h1>
+                            <p class="text-xs font-bold text-blue-700 tracking-wide">Rekapitulasi Data PKL Mandiri BAGTAPEM (Real-time Cloud)</p>
                         </div>
                     </div>
                     
                     <div class="flex items-center space-x-3">
-                        <button onclick="exportToCSV()" class="flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md">
+                        <button onclick="exportToCSV()" class="flex items-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition-all transform hover:-translate-y-0.5">
                             <i data-lucide="download" class="w-4 h-4"></i>
                             <span class="hidden sm:inline">Export CSV</span>
                         </button>
-                        <button onclick="logout()" class="p-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-colors">
+                        <button onclick="logout()" class="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all shadow-sm" title="Keluar">
                             <i data-lucide="log-out" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -72,115 +92,135 @@
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full relative z-10 space-y-6">
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
+            <!-- RINGKASAN STATISTIK -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-blue-600 flex items-center justify-between">
+                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-blue-600 flex items-center justify-between hover:shadow-md transition-all">
                     <div>
-                        <p class="text-sm font-bold text-slate-500 mb-1">Total Laporan Masuk</p>
-                        <h3 class="text-3xl font-extrabold text-slate-900" id="stat-total-laporan">0</h3>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Laporan Masuk</p>
+                        <h3 class="text-3xl font-black text-slate-900" id="stat-total-laporan">0</h3>
                     </div>
-                    <div class="p-4 bg-blue-50 text-blue-600 rounded-full"><i data-lucide="file-text" class="w-7 h-7"></i></div>
+                    <div class="p-4 bg-blue-50 text-blue-600 rounded-2xl"><i data-lucide="file-text" class="w-7 h-7"></i></div>
                 </div>
                 
-                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-amber-500 flex items-center justify-between">
+                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-amber-500 flex items-center justify-between hover:shadow-md transition-all">
                     <div>
-                        <p class="text-sm font-bold text-slate-500 mb-1">Total Bangunan / Lapak</p>
-                        <h3 class="text-3xl font-extrabold text-slate-900" id="stat-total-lapak">0</h3>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Bangunan / Lapak</p>
+                        <h3 class="text-3xl font-black text-slate-900" id="stat-total-lapak">0</h3>
                     </div>
-                    <div class="p-4 bg-amber-50 text-amber-600 rounded-full"><i data-lucide="store" class="w-7 h-7"></i></div>
+                    <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="store" class="w-7 h-7"></i></div>
                 </div>
 
-                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-emerald-500 flex items-center justify-between">
+                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-emerald-500 flex items-center justify-between hover:shadow-md transition-all">
                     <div>
-                        <p class="text-sm font-bold text-slate-500 mb-1">Pembaruan Terakhir</p>
-                        <h3 class="text-lg font-bold text-slate-900 mt-2" id="stat-last-update">-</h3>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Pembaruan Terakhir</p>
+                        <h3 class="text-base font-extrabold text-slate-900 mt-2" id="stat-last-update">-</h3>
                     </div>
-                    <div class="p-4 bg-emerald-50 text-emerald-600 rounded-full"><i data-lucide="clock" class="w-7 h-7"></i></div>
+                    <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl"><i data-lucide="clock" class="w-7 h-7"></i></div>
                 </div>
             </div>
 
-            <div class="glass-panel rounded-3xl shadow-sm overflow-hidden">
-                <div class="p-6 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <!-- TABEL DATA -->
+            <div class="glass-panel rounded-3xl shadow-sm overflow-hidden border border-white">
+                <div class="p-6 border-b border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-lg font-bold text-slate-900">Database Pelaporan PKL</h2>
-                        <p class="text-sm font-medium text-slate-500">Tersinkronisasi otomatis dari lapangan secara real-time.</p>
+                        <p class="text-xs font-semibold text-slate-500 mt-0.5">Tersinkronisasi otomatis dari lapangan secara real-time cloud.</p>
                     </div>
-                    <div class="relative w-full sm:w-64">
-                        <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Cari ID / Lokasi..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium">
-                        <i data-lucide="search" class="absolute left-3 top-3 w-4 h-4 text-slate-400"></i>
+                    <div class="relative w-full sm:w-72">
+                        <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Cari Ref ID / Lokasi / Kelurahan..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-xs font-semibold transition-all outline-none shadow-sm">
+                        <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
                     </div>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse" id="data-table">
                         <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                            <tr class="bg-slate-100/70 border-b border-slate-200 text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
                                 <th class="px-6 py-4">Ref ID</th>
-                                <th class="px-6 py-4">Waktu Lapor</th>
+                                <th class="px-6 py-4">Tanggal Data</th>
                                 <th class="px-6 py-4">Wilayah</th>
                                 <th class="px-6 py-4">Lokasi & Lapak</th>
                                 <th class="px-6 py-4 text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                        <tbody id="table-body" class="divide-y divide-slate-100 text-sm font-medium"></tbody>
                     </table>
                 </div>
                 
                 <div id="empty-state" class="hidden flex-col items-center justify-center py-16 text-center">
                     <div class="bg-slate-100 p-4 rounded-full text-slate-400 mb-3"><i data-lucide="inbox" class="w-8 h-8"></i></div>
-                    <h4 class="text-base font-bold text-slate-800">Belum Ada Data</h4>
-                    <p class="text-sm text-slate-500 mt-1">Data pelaporan baru dari user akan muncul di sini secara otomatis.</p>
+                    <h4 class="text-base font-bold text-slate-800">Belum Ada Data Laporan</h4>
+                    <p class="text-xs text-slate-500 mt-1 max-w-sm">Data pelaporan baru dari petugas lapangan akan muncul di sini secara otomatis.</p>
                 </div>
             </div>
         </main>
-    </div>
 
-    <!-- MODAL DETAIL ADMIN -->
-    <div id="admin-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="glass-panel bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button onclick="closeAdminModal()" class="absolute top-4 right-4 p-2 text-slate-500 hover:text-slate-800 rounded-full hover:bg-slate-100"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <div class="flex items-center space-x-3 pb-4 border-b border-slate-200">
-                <div class="bg-blue-100 p-2.5 rounded-xl"><i data-lucide="file-search" class="w-6 h-6 text-blue-700"></i></div>
-                <div>
-                    <h2 class="text-lg font-bold text-slate-900">Detail Pelaporan</h2>
-                    <p class="text-xs font-bold font-mono text-blue-800" id="detail-id">REF: -</p>
+        <!-- FOOTER ELEGAN -->
+        <footer class="bg-white/90 backdrop-blur-md mt-12 py-6 border-t border-slate-200 relative z-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-3 text-left">
+                    <img src="logo bagtapem.png" alt="Logo BAGTAPEM" class="h-10 w-auto object-contain" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Lambang_Kota_Bandung.svg/1200px-Lambang_Kota_Bandung.svg.png'">
+                    <div>
+                        <p class="font-extrabold text-sm text-slate-800">Bagian Tata Pemerintahan (BAGTAPEM)</p>
+                        <p class="text-[11px] text-slate-500 font-semibold tracking-wide">Sekretariat Daerah Kota Bandung &copy; 2026</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 bg-slate-50 px-4 py-2 rounded-full border border-slate-200 shadow-sm">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-xs font-bold text-slate-600">Cloud Realtime Sync Active</span>
                 </div>
             </div>
+        </footer>
+    </div>
+
+    <!-- MODAL DETAIL ADMIN DENGAN ANIMASI -->
+    <div id="admin-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 pointer-events-none">
+        <div id="modal-content" class="glass-panel bg-white/95 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto transform scale-95 transition-all duration-300 opacity-0 border border-white">
+            <button onclick="closeAdminModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 rounded-full hover:bg-slate-100 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            
+            <div class="flex items-center space-x-3 pb-4 border-b border-slate-200">
+                <div class="bg-blue-100 p-3 rounded-2xl text-blue-800"><i data-lucide="file-search" class="w-6 h-6"></i></div>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Detail Pelaporan PKL</h2>
+                    <p class="text-xs font-mono font-extrabold text-blue-800" id="detail-id">REF: -</p>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase">Foto Lapangan</span>
-                    <div class="w-full h-56 bg-slate-100 rounded-xl overflow-hidden border border-slate-300">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Foto Dokumen Lapangan</span>
+                    <div class="w-full h-56 bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner">
                         <img id="detail-img" src="" alt="Foto Lokasi" class="w-full h-full object-cover">
                     </div>
                 </div>
-                <div class="space-y-3 text-sm">
-                    <div><span class="text-xs font-bold text-slate-500 block">Kecamatan / Kelurahan</span><p class="font-bold text-slate-900"><span id="detail-kec"></span> / <span id="detail-kel"></span></p></div>
-                    <div><span class="text-xs font-bold text-slate-500 block">Lokasi / RT RW</span><p class="font-bold text-slate-900" id="detail-lokasi"></p></div>
-                    <div class="flex items-center justify-between bg-blue-50 p-3 rounded-xl border border-blue-100"><span class="text-xs font-bold text-blue-900">Jumlah Lapak:</span><span class="font-extrabold text-blue-700 text-lg" id="detail-jumlah">0 Unit</span></div>
-                    <div><span class="text-xs font-bold text-slate-500 block">Waktu Pelaksanaan</span><p class="font-semibold text-slate-800" id="detail-waktu"></p></div>
+                <div class="space-y-3 text-xs sm:text-sm">
+                    <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Kecamatan / Kelurahan</span><p class="font-extrabold text-slate-900 text-base"><span id="detail-kec"></span> / <span id="detail-kel"></span></p></div>
+                    <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Lokasi & RW</span><p class="font-bold text-slate-800 whitespace-pre-wrap bg-slate-50 p-2.5 rounded-xl border border-slate-200" id="detail-lokasi"></p></div>
+                    <div class="flex items-center justify-between bg-blue-50/80 p-3 rounded-xl border border-blue-100"><span class="text-xs font-bold text-blue-900">Jumlah Lapak / Bangli:</span><span class="font-black text-blue-800 text-lg" id="detail-jumlah">0 Unit</span></div>
+                    <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Tanggal Pelaksanaan</span><p class="font-bold text-slate-800" id="detail-waktu"></p></div>
                 </div>
             </div>
-            <div class="space-y-3 pt-2 border-t border-slate-100">
+
+            <div class="space-y-3 pt-3 border-t border-slate-100">
                 <div>
-                    <span class="text-xs font-bold text-slate-500 block mb-1">Data PKL</span>
-                    <p class="p-3 bg-slate-50 rounded-xl text-slate-900 font-medium text-sm border border-slate-200" id="detail-datapkl"></p>
-                    <div id="detail-file-container" class="mt-2 hidden flex items-center space-x-2 text-sm text-blue-800 bg-blue-50 px-3 py-2 rounded-lg w-fit border border-blue-200">
-                        <i data-lucide="paperclip" class="w-4 h-4"></i><span class="font-bold" id="detail-file-name"></span>
-                    </div>
+                    <span class="text-xs font-bold text-slate-500 uppercase block mb-1.5">Rincian Data PKL</span>
+                    <p class="p-3 bg-slate-50 rounded-xl text-slate-900 font-bold text-xs border border-slate-200 whitespace-pre-wrap leading-relaxed shadow-sm" id="detail-datapkl"></p>
                 </div>
                 <div>
-                    <span class="text-xs font-bold text-slate-500 block mb-1">Keterangan Tambahan</span>
-                    <p class="p-3 bg-slate-50 rounded-xl text-slate-700 italic text-sm border border-slate-200" id="detail-keterangan"></p>
+                    <span class="text-xs font-bold text-slate-500 uppercase block mb-1.5">Keterangan Tambahan</span>
+                    <p class="p-3 bg-slate-50/60 rounded-xl text-slate-700 italic text-xs border border-slate-200" id="detail-keterangan"></p>
                 </div>
             </div>
-            <div class="pt-4 flex justify-end">
-                <button onclick="closeAdminModal()" class="px-5 py-2.5 bg-slate-900 text-white font-bold rounded-xl">Tutup Detail</button>
+
+            <div class="pt-4 flex justify-end border-t border-slate-100">
+                <button onclick="closeAdminModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all shadow-md">Tutup Detail</button>
             </div>
         </div>
     </div>
 
+    <!-- LOGIKA JAVASCRIPT MASTER -->
     <script>
-        // KONFIGURASI FIREBASE KAMU
         const firebaseConfig = {
             apiKey: "AIzaSyD0rc-XdBOnicvQNL8m0tt85Oce-Dd_LZI",
             authDomain: "bagtapem-db.firebaseapp.com",
@@ -197,22 +237,46 @@
         let pklData = [];
         let pklKeys = [];
 
+        // TOAST NOTIFICATION
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass, iconName;
+            if (type === 'success') { bgClass = 'bg-emerald-600'; iconName = 'check-circle'; }
+            else if (type === 'error') { bgClass = 'bg-red-600'; iconName = 'alert-octagon'; }
+            else { bgClass = 'bg-blue-600'; iconName = 'info'; }
+
+            toast.className = `${bgClass} text-white px-5 py-3.5 rounded-xl shadow-xl transform transition-all duration-500 translate-x-[120%] flex items-center gap-3 pointer-events-auto max-w-sm`;
+            toast.innerHTML = `<i data-lucide="${iconName}" class="w-5 h-5 shrink-0"></i> <span class="text-sm font-semibold">${message}</span>`;
+            
+            container.appendChild(toast);
+            lucide.createIcons({root: toast});
+            
+            setTimeout(() => { toast.classList.remove('translate-x-[120%]'); }, 50);
+            setTimeout(() => { toast.classList.add('translate-x-[120%]'); setTimeout(() => toast.remove(), 500); }, 3500);
+        }
+
         function handleLogin(e) {
             e.preventDefault();
             const pass = document.getElementById('admin-pass').value;
-            if (pass === 'admin123') { // PASSWORD DEFAULT
-                document.getElementById('login-overlay').classList.add('hidden');
-                document.getElementById('dashboard-content').classList.remove('hidden');
-                document.getElementById('dashboard-content').classList.add('flex');
-                listenRealtimeData();
+            if (pass === 'admin123') { 
+                document.getElementById('login-overlay').classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    document.getElementById('login-overlay').classList.add('hidden');
+                    document.getElementById('dashboard-content').classList.remove('hidden');
+                    document.getElementById('dashboard-content').classList.add('flex');
+                    listenRealtimeData();
+                    showToast("Selamat Datang di Master Dashboard Admin", "success");
+                }, 300);
             } else {
-                alert("Password Admin Salah!");
+                showToast("Password Admin Salah!", "error");
             }
         }
 
         function logout() { location.reload(); }
 
-        // LISTEN DATA DARI FIREBASE SECARA REAL-TIME
+        // LISTEN REALTIME FIREBASE
         function listenRealtimeData() {
             database.ref('pkl_reports').on('value', (snapshot) => {
                 const data = snapshot.val();
@@ -245,18 +309,23 @@
 
             data.forEach((item, index) => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-blue-50/50 transition-colors group';
-                const formattedWaktu = new Date(item.waktu).toLocaleString('id-ID');
+                tr.className = 'hover:bg-blue-50/60 transition-colors group';
+                
+                // Format Tgl Indonesia
+                let formattedWaktu = '-';
+                if(item.waktu) {
+                    formattedWaktu = new Date(item.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                }
 
                 tr.innerHTML = `
-                    <td class="px-6 py-4"><span class="font-mono font-bold text-xs text-blue-900 bg-blue-100 px-2.5 py-1 rounded-md border border-blue-200">${item.id}</span></td>
-                    <td class="px-6 py-4"><span class="text-slate-700 font-medium">${formattedWaktu}</span></td>
-                    <td class="px-6 py-4"><p class="font-bold text-slate-900">${item.kecamatan}</p><p class="text-xs text-slate-500">${item.kelurahan}</p></td>
-                    <td class="px-6 py-4"><p class="font-bold text-slate-800 truncate max-w-[200px]">${item.lokasi}</p><p class="text-xs font-semibold text-amber-600">${item.jumlah} Lapak</p></td>
+                    <td class="px-6 py-4"><span class="font-mono font-extrabold text-xs text-blue-900 bg-blue-100/80 px-2.5 py-1 rounded-md border border-blue-200">${item.id || '-'}</span></td>
+                    <td class="px-6 py-4"><span class="text-slate-700 font-bold text-xs">${formattedWaktu}</span></td>
+                    <td class="px-6 py-4"><p class="font-extrabold text-slate-900">${item.kecamatan || '-'}</p><p class="text-xs text-slate-500 font-semibold">${item.kelurahan || '-'}</p></td>
+                    <td class="px-6 py-4"><p class="font-bold text-slate-800 truncate max-w-[200px] text-xs">${item.lokasi || item.jalan || '-'}</p><p class="text-xs font-black text-amber-600 mt-0.5">${item.jumlah || 0} Lapak</p></td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center space-x-2">
-                            <button onclick="viewDetail(${index})" class="p-2 bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg"><i data-lucide="eye" class="w-4 h-4"></i></button>
-                            <button onclick="deleteCloudRow('${pklKeys[index]}')" class="p-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <button onclick="viewDetail(${index})" class="p-2 bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg transition-all" title="Lihat Detail"><i data-lucide="eye" class="w-4 h-4"></i></button>
+                            <button onclick="deleteCloudRow('${pklKeys[index]}')" class="p-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </td>
                 `;
@@ -269,54 +338,83 @@
             document.getElementById('stat-total-laporan').innerText = data.length;
             const totalLapak = data.reduce((sum, item) => sum + (parseInt(item.jumlah) || 0), 0);
             document.getElementById('stat-total-lapak').innerText = totalLapak;
-            if (data.length > 0) {
-                document.getElementById('stat-last-update').innerText = new Date(data[0].waktu).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
-            } else { document.getElementById('stat-last-update').innerText = '-'; }
+            
+            if (data.length > 0 && data[0].waktu) {
+                document.getElementById('stat-last-update').innerText = new Date(data[0].waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            } else { 
+                document.getElementById('stat-last-update').innerText = '-'; 
+            }
         }
 
         function filterTable() {
             const query = document.getElementById('search-input').value.toLowerCase();
-            const filtered = pklData.filter(item => item.id.toLowerCase().includes(query) || item.lokasi.toLowerCase().includes(query));
+            const filtered = pklData.filter(item => {
+                const ref = (item.id || '').toLowerCase();
+                const kec = (item.kecamatan || '').toLowerCase();
+                const kel = (item.kelurahan || '').toLowerCase();
+                const lok = (item.lokasi || item.jalan || '').toLowerCase();
+                return ref.includes(query) || kec.includes(query) || kel.includes(query) || lok.includes(query);
+            });
             renderTable(filtered);
         }
 
+        // MODAL DETAIL ANIMATION
         function viewDetail(index) {
             const item = pklData[index];
-            document.getElementById('detail-id').innerText = `REF: ${item.id}`;
-            document.getElementById('detail-img').src = item.dokumentasi;
-            document.getElementById('detail-kec').innerText = item.kecamatan;
-            document.getElementById('detail-kel').innerText = item.kelurahan;
-            document.getElementById('detail-lokasi').innerText = `${item.lokasi} (RT/RW: ${item.rtrw})`;
-            document.getElementById('detail-jumlah').innerText = `${item.jumlah} Unit`;
-            document.getElementById('detail-waktu').innerText = new Date(item.waktu).toLocaleString('id-ID');
-            document.getElementById('detail-datapkl').innerText = item.datapkl;
-            document.getElementById('detail-keterangan').innerText = item.keterangan;
-            const fileContainer = document.getElementById('detail-file-container');
-            if (item.filePklName) {
-                document.getElementById('detail-file-name').innerText = item.filePklName;
-                fileContainer.classList.remove('hidden');
-            } else { fileContainer.classList.add('hidden'); }
-            document.getElementById('admin-modal').classList.remove('hidden');
+            document.getElementById('detail-id').innerText = `REF: ${item.id || '-'}`;
+            document.getElementById('detail-img').src = item.dokumentasi || '';
+            document.getElementById('detail-kec').innerText = item.kecamatan || '-';
+            document.getElementById('detail-kel').innerText = item.kelurahan || '-';
+            document.getElementById('detail-lokasi').innerText = item.lokasi || item.jalan || '-';
+            document.getElementById('detail-jumlah').innerText = `${item.jumlah || 0} Unit`;
+            document.getElementById('detail-waktu').innerText = item.waktu ? new Date(item.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
+            document.getElementById('detail-datapkl').innerText = item.datapkl || '-';
+            document.getElementById('detail-keterangan').innerText = item.keterangan || '-';
+            
+            const modal = document.getElementById('admin-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
         }
 
-        function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
+        function closeAdminModal() { 
+            const modal = document.getElementById('admin-modal');
+            const content = document.getElementById('modal-content');
+            
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
 
         function deleteCloudRow(key) {
-            if(confirm("Hapus data ini dari cloud secara permanen?")) {
-                database.ref(`pkl_reports/${key}`).remove();
+            if(confirm("Apakah Anda yakin ingin menghapus data ini dari cloud secara permanen?")) {
+                database.ref(`pkl_reports/${key}`).remove()
+                    .then(() => showToast("Data berhasil dihapus dari Cloud", "success"))
+                    .catch(err => showToast("Gagal menghapus: " + err.message, "error"));
             }
         }
 
         function exportToCSV() {
-            if (pklData.length === 0) { alert("Tidak ada data."); return; }
-            let csv = "data:text/csv;charset=utf-8,Ref ID,Kecamatan,Kelurahan,Lokasi,RT/RW,Jumlah Lapak,Waktu,Data PKL,Keterangan\n";
+            if (pklData.length === 0) { showToast("Tidak ada data untuk di-export.", "error"); return; }
+            let csv = "data:text/csv;charset=utf-8,Ref ID,Kecamatan,Kelurahan,Lokasi,Jumlah Lapak,Tanggal,Data PKL,Keterangan\n";
             pklData.forEach(row => {
-                csv += `${row.id},${row.kecamatan},${row.kelurahan},${row.lokasi.replace(/,/g, " ")},${row.rtrw},${row.jumlah},${row.waktu},${row.datapkl.replace(/,/g, " ")},${row.keterangan.replace(/,/g, " ")}\n`;
+                const lokasiClean = (row.lokasi || row.jalan || '-').replace(/,/g, " ").replace(/\n/g, " | ");
+                const dataPklClean = (row.datapkl || '-').replace(/,/g, " ").replace(/\n/g, " | ");
+                const ketClean = (row.keterangan || '-').replace(/,/g, " ").replace(/\n/g, " ");
+                csv += `${row.id || '-'},${row.kecamatan || '-'},${row.kelurahan || '-'},${lokasiClean},${row.jumlah || 0},${row.waktu || '-'},${dataPklClean},${ketClean}\n`;
             });
             const link = document.createElement("a");
             link.href = encodeURI(csv);
             link.download = `Rekap_PKL_BAGTAPEM_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
+            showToast("File CSV berhasil diunduh!", "success");
         }
 
         document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
