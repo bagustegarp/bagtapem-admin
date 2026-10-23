@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN - PKL & BANGLI 
-        
-    </title>
+    <title>ADMIN - PKL & BANGLI</title>
     
     <link rel="icon" type="image/png" href="logo bagtapem.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -75,14 +73,11 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-20">
                     <div class="flex items-center space-x-4">
-                        <div class="bg-gradient-to-br from-blue-700 to-blue-900 p-3 rounded-2xl shadow-md text-white">
-                            <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
-                        </div>
+                        <!-- LOGO KIRI PENGGANTI ICON KOTAK BIRU -->
+                        <img src="logo bagtapem.png" alt="Logo BAGTAPEM" class="h-12 w-auto object-contain drop-shadow-sm" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Lambang_Kota_Bandung.svg/1200px-Lambang_Kota_Bandung.svg.png'">
                         <div>
                             <h1 class="text-xl font-black text-slate-900 leading-tight tracking-tight">MASTER DASHBOARD</h1>
-                            <p class="text-xs font-bold text-blue-700 tracking-wide">REKAPITULASI DATA PKL & BANGLI 
-
-                            </p>
+                            <p class="text-xs font-bold text-blue-700 tracking-wide">REKAPITULASI DATA PKL & BANGLI</p>
                         </div>
                     </div>
                     
@@ -104,7 +99,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-blue-600 flex items-center justify-between hover:shadow-md transition-all">
                     <div>
-                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Laporan Masuk</p>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Laporan</p>
                         <h3 class="text-3xl font-black text-slate-900" id="stat-total-laporan">0</h3>
                     </div>
                     <div class="p-4 bg-blue-50 text-blue-600 rounded-2xl"><i data-lucide="file-text" class="w-7 h-7"></i></div>
@@ -112,7 +107,7 @@
                 
                 <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-amber-500 flex items-center justify-between hover:shadow-md transition-all">
                     <div>
-                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Unit (Kuantitas)</p>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Kuantitas Unit</p>
                         <h3 class="text-3xl font-black text-slate-900" id="stat-total-lapak">0</h3>
                     </div>
                     <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="layers" class="w-7 h-7"></i></div>
@@ -129,17 +124,39 @@
 
             <!-- TABEL DATA -->
             <div class="glass-panel rounded-3xl shadow-sm overflow-hidden border border-white">
-                <div class="p-6 border-b border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
+                
+                <!-- HEADER TABEL & FILTER AREA -->
+                <div class="p-6 border-b border-slate-200/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                    <div class="flex-shrink-0">
                         <h2 class="text-lg font-bold text-slate-900">Database Pelaporan Penertiban</h2>
-                        <p class="text-xs font-semibold text-slate-500 mt-0.5">Tersinkronisasi otomatis dari lapangan secara real-time cloud.</p>
+                        <p class="text-xs font-semibold text-slate-500 mt-0.5">Tersinkronisasi otomatis dari lapangan secara real-time.</p>
                     </div>
-                    <div class="relative w-full sm:w-72">
-                        <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Cari Ref ID / Kategori / Wilayah..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-xs font-semibold transition-all outline-none shadow-sm">
-                        <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
+                    
+                    <!-- AREA FILTER (Kategori, Wilayah, Cari) -->
+                    <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                        <!-- Dropdown Kategori -->
+                        <select id="filter-kategori" onchange="filterTable()" class="w-full sm:w-40 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-bold text-slate-700 transition-all outline-none shadow-sm cursor-pointer">
+                            <option value="">Semua Kategori</option>
+                            <option value="bangli">BANGLI</option>
+                            <option value="pkl">PKL</option>
+                            <option value="spanduk, baliho dan tali-talian">SPANDUK & BALIHO</option>
+                        </select>
+                        
+                        <!-- Dropdown Wilayah -->
+                        <select id="filter-wilayah" onchange="filterTable()" class="w-full sm:w-40 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-bold text-slate-700 transition-all outline-none shadow-sm cursor-pointer">
+                            <option value="">Semua Wilayah</option>
+                            <!-- Diisi Otomatis Lewat Javascript -->
+                        </select>
+
+                        <!-- Kolom Pencarian -->
+                        <div class="relative w-full sm:w-56">
+                            <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Cari Ref ID / Lokasi..." class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-semibold transition-all outline-none shadow-sm">
+                            <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
+                        </div>
                     </div>
                 </div>
 
+                <!-- TABEL KONTEN -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse" id="data-table">
                         <thead>
@@ -158,8 +175,8 @@
                 
                 <div id="empty-state" class="hidden flex-col items-center justify-center py-16 text-center">
                     <div class="bg-slate-100 p-4 rounded-full text-slate-400 mb-3"><i data-lucide="inbox" class="w-8 h-8"></i></div>
-                    <h4 class="text-base font-bold text-slate-800">Belum Ada Data Laporan</h4>
-                    <p class="text-xs text-slate-500 mt-1 max-w-sm">Data pelaporan baru dari petugas lapangan akan muncul di sini secara otomatis.</p>
+                    <h4 class="text-base font-bold text-slate-800">Tidak Ada Data Ditemukan</h4>
+                    <p class="text-xs text-slate-500 mt-1 max-w-sm">Data belum masuk atau tidak ada hasil dari pencarian / filter Anda.</p>
                 </div>
             </div>
         </main>
@@ -246,7 +263,28 @@
         const database = firebase.database();
 
         let pklData = [];
-        let pklKeys = [];
+        let currentFilteredData = []; // Data tersaring untuk render dan export
+
+        // POPULATE DROPDOWN WILAYAH (KECAMATAN BANDUNG)
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            const wilayahSelect = document.getElementById('filter-wilayah');
+            const kecamatanList = [
+                "Andir", "Antapani", "Arcamanik", "Astana Anyar", "Babakan Ciparay",
+                "Bandung Kidul", "Bandung Kulon", "Bandung Wetan", "Batununggal", "Bojongloa Kaler",
+                "Bojongloa Kidul", "Buahbatu", "Cibeunying Kaler", "Cibeunying Kidul", "Cibiru",
+                "Cicendo", "Cidadap", "Cinambo", "Coblong", "Gedebage",
+                "Kiaracondong", "Lengkong", "Mandalajati", "Panyileukan", "Rancasari",
+                "Regol", "Sukajadi", "Sukasari", "Sumur Bandung", "Ujungberung"
+            ];
+            
+            kecamatanList.sort().forEach(kec => {
+                const opt = document.createElement('option');
+                opt.value = kec.toLowerCase();
+                opt.textContent = kec;
+                wilayahSelect.appendChild(opt);
+            });
+        });
 
         // TOAST NOTIFICATION
         function showToast(message, type = 'success') {
@@ -292,18 +330,45 @@
             database.ref('pkl_reports').on('value', (snapshot) => {
                 const data = snapshot.val();
                 pklData = [];
-                pklKeys = [];
                 if (data) {
                     Object.keys(data).forEach(key => {
-                        pklKeys.unshift(key);
-                        pklData.unshift(data[key]);
+                        const item = data[key];
+                        item.firebaseKey = key; // Simpan key asli Firebase
+                        pklData.unshift(item);
                     });
                 }
-                renderTable(pklData);
-                updateStats(pklData);
+                
+                // Menerapkan filter awal (menampilkan semua)
+                filterTable();
             });
         }
 
+        // FUNGSI FILTER UTAMA (Mencakup Search, Kategori, Wilayah)
+        function filterTable() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filterKat = document.getElementById('filter-kategori').value.toLowerCase();
+            const filterWil = document.getElementById('filter-wilayah').value.toLowerCase();
+            
+            currentFilteredData = pklData.filter(item => {
+                const ref = (item.id || '').toLowerCase();
+                const kat = (item.kategori_laporan || '').toLowerCase();
+                const kec = (item.kecamatan || '').toLowerCase();
+                const kel = (item.kelurahan || '').toLowerCase();
+                const lok = (item.lokasi || item.jalan || '').toLowerCase();
+                
+                // Logika Pencocokan
+                const matchSearch = ref.includes(query) || kel.includes(query) || lok.includes(query) || kec.includes(query);
+                const matchKat = (filterKat === "" || kat === filterKat);
+                const matchWil = (filterWil === "" || kec === filterWil);
+                
+                return matchSearch && matchKat && matchWil;
+            });
+            
+            renderTable(currentFilteredData);
+            updateStats(currentFilteredData); // Memperbarui Box Statistik di atas sesuai filter
+        }
+
+        // RENDER TABEL HTML
         function renderTable(data) {
             const tbody = document.getElementById('table-body');
             const emptyState = document.getElementById('empty-state');
@@ -322,7 +387,6 @@
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-blue-50/60 transition-colors group';
                 
-                // Format Tgl Indonesia
                 let formattedWaktu = '-';
                 if(item.waktu) {
                     formattedWaktu = new Date(item.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -336,8 +400,9 @@
                     <td class="px-6 py-4"><p class="font-bold text-slate-800 truncate max-w-[200px] text-xs">${item.lokasi || item.jalan || '-'}</p><p class="text-[11px] font-black text-amber-600 mt-0.5">${item.jumlah || 0} Unit</p></td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center space-x-2">
+                            <!-- Index yg dipassing adalah index dari array currentFilteredData -->
                             <button onclick="viewDetail(${index})" class="p-2 bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg transition-all" title="Lihat Detail"><i data-lucide="eye" class="w-4 h-4"></i></button>
-                            <button onclick="deleteCloudRow('${pklKeys[index]}')" class="p-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <button onclick="deleteCloudRow('${item.firebaseKey}')" class="p-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </td>
                 `;
@@ -346,6 +411,7 @@
             lucide.createIcons();
         }
 
+        // UPDATE KOTAK STATISTIK (Dinamis terhadap Filter)
         function updateStats(data) {
             document.getElementById('stat-total-laporan').innerText = data.length;
             const totalLapak = data.reduce((sum, item) => sum + (parseInt(item.jumlah) || 0), 0);
@@ -358,22 +424,9 @@
             }
         }
 
-        function filterTable() {
-            const query = document.getElementById('search-input').value.toLowerCase();
-            const filtered = pklData.filter(item => {
-                const ref = (item.id || '').toLowerCase();
-                const kat = (item.kategori_laporan || '').toLowerCase();
-                const kec = (item.kecamatan || '').toLowerCase();
-                const kel = (item.kelurahan || '').toLowerCase();
-                const lok = (item.lokasi || item.jalan || '').toLowerCase();
-                return ref.includes(query) || kat.includes(query) || kec.includes(query) || kel.includes(query) || lok.includes(query);
-            });
-            renderTable(filtered);
-        }
-
         // MODAL DETAIL ANIMATION
         function viewDetail(index) {
-            const item = pklData[index];
+            const item = currentFilteredData[index];
             document.getElementById('detail-id').innerText = `REF: ${item.id || '-'}`;
             document.getElementById('detail-kategori').innerText = item.kategori_laporan || 'KATEGORI TIDAK TERSEDIA';
             document.getElementById('detail-img').src = item.dokumentasi || '';
@@ -415,14 +468,14 @@
             }
         }
 
-        // EXPORT KE EXCEL RAPI (.XLSX) DENGAN STYLING DAN PENGURUTAN
+        // EXPORT KE EXCEL (Hanya Export Data yang Difilter/Tampil)
         function exportToExcel() {
-            if (pklData.length === 0) { showToast("Tidak ada data untuk di-export.", "error"); return; }
+            if (currentFilteredData.length === 0) { showToast("Tidak ada data untuk di-export.", "error"); return; }
             
             showToast("Sedang memproses dokumen Excel...", "info");
 
-            // 1. Sort Data Berdasarkan KECAMATAN (A-Z)
-            const sortedData = [...pklData].sort((a, b) => {
+            // 1. Sort Data Berdasarkan KECAMATAN (A-Z) agar tidak terpisah-pisah
+            const sortedData = [...currentFilteredData].sort((a, b) => {
                 const kecA = (a.kecamatan || '').toLowerCase();
                 const kecB = (b.kecamatan || '').toLowerCase();
                 return kecA.localeCompare(kecB);
@@ -457,14 +510,14 @@
             worksheet['!cols'] = [
                 { wch: 5 },   // No
                 { wch: 18 },  // Ref ID
-                { wch: 18 },  // Kategori Laporan
+                { wch: 20 },  // Kategori Laporan
                 { wch: 18 },  // Kecamatan
-                { wch: 18 },  // Kelurahan
-                { wch: 35 },  // Lokasi
+                { wch: 20 },  // Kelurahan
+                { wch: 40 },  // Lokasi
                 { wch: 22 },  // Jumlah Lapak
                 { wch: 20 },  // Tanggal
-                { wch: 40 },  // Rincian Keterangan
-                { wch: 30 },  // Keterangan Tambahan
+                { wch: 45 },  // Rincian Keterangan
+                { wch: 35 },  // Keterangan Tambahan
                 { wch: 30 }   // Dokumentasi
             ];
 
@@ -519,8 +572,6 @@
                 showToast("Berhasil terunduh sebagai file Excel (.xlsx) rapi!", "success");
             }, 500);
         }
-
-        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
     </script>
 </body>
 </html>
