@@ -108,10 +108,10 @@
                 
                 <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-amber-500 flex items-center justify-between hover:shadow-md transition-all">
                     <div>
-                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Bangunan / Lapak</p>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Unit (Kuantitas)</p>
                         <h3 class="text-3xl font-black text-slate-900" id="stat-total-lapak">0</h3>
                     </div>
-                    <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="store" class="w-7 h-7"></i></div>
+                    <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="layers" class="w-7 h-7"></i></div>
                 </div>
 
                 <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-emerald-500 flex items-center justify-between hover:shadow-md transition-all">
@@ -127,11 +127,11 @@
             <div class="glass-panel rounded-3xl shadow-sm overflow-hidden border border-white">
                 <div class="p-6 border-b border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-900">Database Pelaporan PKL</h2>
+                        <h2 class="text-lg font-bold text-slate-900">Database Pelaporan Penertiban</h2>
                         <p class="text-xs font-semibold text-slate-500 mt-0.5">Tersinkronisasi otomatis dari lapangan secara real-time cloud.</p>
                     </div>
                     <div class="relative w-full sm:w-72">
-                        <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Cari Ref ID / Lokasi / Kelurahan..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-xs font-semibold transition-all outline-none shadow-sm">
+                        <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Cari Ref ID / Kategori / Wilayah..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-xs font-semibold transition-all outline-none shadow-sm">
                         <i data-lucide="search" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
                     </div>
                 </div>
@@ -141,9 +141,10 @@
                         <thead>
                             <tr class="bg-slate-100/70 border-b border-slate-200 text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
                                 <th class="px-6 py-4">Ref ID</th>
+                                <th class="px-6 py-4">Kategori</th>
                                 <th class="px-6 py-4">Tanggal Data</th>
                                 <th class="px-6 py-4">Wilayah</th>
-                                <th class="px-6 py-4">Lokasi & Lapak</th>
+                                <th class="px-6 py-4">Lokasi & Kuantitas</th>
                                 <th class="px-6 py-4 text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -185,8 +186,11 @@
             <div class="flex items-center space-x-3 pb-4 border-b border-slate-200">
                 <div class="bg-blue-100 p-3 rounded-2xl text-blue-800"><i data-lucide="file-search" class="w-6 h-6"></i></div>
                 <div>
-                    <h2 class="text-lg font-bold text-slate-900">Detail Pelaporan PKL</h2>
-                    <p class="text-xs font-mono font-extrabold text-blue-800" id="detail-id">REF: -</p>
+                    <h2 class="text-lg font-bold text-slate-900">Detail Pelaporan</h2>
+                    <div class="flex items-center gap-2 mt-1">
+                        <p class="text-xs font-mono font-extrabold text-blue-800" id="detail-id">REF: -</p>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider bg-slate-200 text-slate-700" id="detail-kategori">-</span>
+                    </div>
                 </div>
             </div>
 
@@ -200,14 +204,14 @@
                 <div class="space-y-3 text-xs sm:text-sm">
                     <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Kecamatan / Kelurahan</span><p class="font-extrabold text-slate-900 text-base"><span id="detail-kec"></span> / <span id="detail-kel"></span></p></div>
                     <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Lokasi & RW</span><p class="font-bold text-slate-800 whitespace-pre-wrap bg-slate-50 p-2.5 rounded-xl border border-slate-200" id="detail-lokasi"></p></div>
-                    <div class="flex items-center justify-between bg-blue-50/80 p-3 rounded-xl border border-blue-100"><span class="text-xs font-bold text-blue-900">Jumlah Lapak / Bangli:</span><span class="font-black text-blue-800 text-lg" id="detail-jumlah">0 Unit</span></div>
+                    <div class="flex items-center justify-between bg-blue-50/80 p-3 rounded-xl border border-blue-100"><span class="text-xs font-bold text-blue-900">Total Kuantitas:</span><span class="font-black text-blue-800 text-lg" id="detail-jumlah">0 Unit</span></div>
                     <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Tanggal Pelaksanaan</span><p class="font-bold text-slate-800" id="detail-waktu"></p></div>
                 </div>
             </div>
 
             <div class="space-y-3 pt-3 border-t border-slate-100">
                 <div>
-                    <span class="text-xs font-bold text-slate-500 uppercase block mb-1.5">Rincian Data PKL</span>
+                    <span class="text-xs font-bold text-slate-500 uppercase block mb-1.5">Keterangan Rincian</span>
                     <p class="p-3 bg-slate-50 rounded-xl text-slate-900 font-bold text-xs border border-slate-200 whitespace-pre-wrap leading-relaxed shadow-sm" id="detail-datapkl"></p>
                 </div>
                 <div>
@@ -321,10 +325,11 @@
                 }
 
                 tr.innerHTML = `
-                    <td class="px-6 py-4"><span class="font-mono font-extrabold text-xs text-blue-900 bg-blue-100/80 px-2.5 py-1 rounded-md border border-blue-200">${item.id || '-'}</span></td>
+                    <td class="px-6 py-4"><span class="font-mono font-extrabold text-[11px] text-blue-900 bg-blue-100/80 px-2.5 py-1 rounded-md border border-blue-200">${item.id || '-'}</span></td>
+                    <td class="px-6 py-4"><span class="font-bold text-[10px] text-slate-700 bg-slate-200/70 px-2 py-1 rounded-md uppercase tracking-wider border border-slate-300">${item.kategori_laporan || 'TIDAK ADA'}</span></td>
                     <td class="px-6 py-4"><span class="text-slate-700 font-bold text-xs">${formattedWaktu}</span></td>
-                    <td class="px-6 py-4"><p class="font-extrabold text-slate-900">${item.kecamatan || '-'}</p><p class="text-xs text-slate-500 font-semibold">${item.kelurahan || '-'}</p></td>
-                    <td class="px-6 py-4"><p class="font-bold text-slate-800 truncate max-w-[200px] text-xs">${item.lokasi || item.jalan || '-'}</p><p class="text-xs font-black text-amber-600 mt-0.5">${item.jumlah || 0} Lapak</p></td>
+                    <td class="px-6 py-4"><p class="font-extrabold text-slate-900 text-xs">${item.kecamatan || '-'}</p><p class="text-[11px] text-slate-500 font-semibold">${item.kelurahan || '-'}</p></td>
+                    <td class="px-6 py-4"><p class="font-bold text-slate-800 truncate max-w-[200px] text-xs">${item.lokasi || item.jalan || '-'}</p><p class="text-[11px] font-black text-amber-600 mt-0.5">${item.jumlah || 0} Unit</p></td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center space-x-2">
                             <button onclick="viewDetail(${index})" class="p-2 bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg transition-all" title="Lihat Detail"><i data-lucide="eye" class="w-4 h-4"></i></button>
@@ -353,10 +358,11 @@
             const query = document.getElementById('search-input').value.toLowerCase();
             const filtered = pklData.filter(item => {
                 const ref = (item.id || '').toLowerCase();
+                const kat = (item.kategori_laporan || '').toLowerCase();
                 const kec = (item.kecamatan || '').toLowerCase();
                 const kel = (item.kelurahan || '').toLowerCase();
                 const lok = (item.lokasi || item.jalan || '').toLowerCase();
-                return ref.includes(query) || kec.includes(query) || kel.includes(query) || lok.includes(query);
+                return ref.includes(query) || kat.includes(query) || kec.includes(query) || kel.includes(query) || lok.includes(query);
             });
             renderTable(filtered);
         }
@@ -365,6 +371,7 @@
         function viewDetail(index) {
             const item = pklData[index];
             document.getElementById('detail-id').innerText = `REF: ${item.id || '-'}`;
+            document.getElementById('detail-kategori').innerText = item.kategori_laporan || 'KATEGORI TIDAK TERSEDIA';
             document.getElementById('detail-img').src = item.dokumentasi || '';
             document.getElementById('detail-kec').innerText = item.kecamatan || '-';
             document.getElementById('detail-kel').innerText = item.kelurahan || '-';
@@ -418,14 +425,15 @@
                 return {
                     "No": idx + 1,
                     "Ref ID": row.id || '-',
+                    "Kategori Laporan": row.kategori_laporan || '-',
                     "Kecamatan": row.kecamatan || '-',
                     "Kelurahan": row.kelurahan || '-',
                     "Lokasi / Jalan & RW": (row.lokasi || row.jalan || '-').replace(/\n/g, " | "),
-                    "Jumlah Lapak (Unit)": parseInt(row.jumlah) || 0,
+                    "Jumlah Kuantitas (Unit)": parseInt(row.jumlah) || 0,
                     "Tanggal Data": formattedWaktu,
-                    "Rincian Data PKL": (row.datapkl || '-').replace(/\n/g, " | "),
-                    "Keterangan": (row.keterangan || '-').replace(/\n/g, " "),
-                    "Status Dokumentasi": row.dokumentasi ? "Tersedia (Foto Base64 Cloud)" : "Tidak Ada Foto"
+                    "Keterangan Rincian": (row.datapkl || '-').replace(/\n/g, " | "),
+                    "Keterangan Tambahan": (row.keterangan || '-').replace(/\n/g, " "),
+                    "Status Dokumentasi": row.dokumentasi ? "Tersedia (Foto Cloud Base64)" : "Tidak Ada Foto"
                 };
             });
 
@@ -436,22 +444,23 @@
             worksheet['!cols'] = [
                 { wch: 6 },   // No
                 { wch: 18 },  // Ref ID
+                { wch: 18 },  // Kategori Laporan
                 { wch: 18 },  // Kecamatan
                 { wch: 18 },  // Kelurahan
                 { wch: 35 },  // Lokasi
-                { wch: 18 },  // Jumlah Lapak
+                { wch: 22 },  // Jumlah Lapak
                 { wch: 20 },  // Tanggal
-                { wch: 35 },  // Rincian Data PKL
-                { wch: 30 },  // Keterangan
-                { wch: 25 }   // Dokumentasi
+                { wch: 40 },  // Rincian Keterangan
+                { wch: 30 },  // Keterangan Tambahan
+                { wch: 30 }   // Dokumentasi
             ];
 
             // 4. Buat workbook Excel
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Data PKL BAGTAPEM");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Data Master BAGTAPEM");
 
             // 5. Unduh sebagai file .xlsx murni
-            const fileName = `Rekap_Pendataan_PKL_BAGTAPEM_${new Date().toISOString().split('T')[0]}.xlsx`;
+            const fileName = `Rekap_Pendataan_BAGTAPEM_${new Date().toISOString().split('T')[0]}.xlsx`;
             XLSX.writeFile(workbook, fileName);
 
             showToast("Berhasil terunduh sebagai file Excel (.xlsx) rapi!", "success");
