@@ -13,8 +13,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    <!-- SheetJS CDN (Untuk Export XLSX Asli & Rapi) -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Menggunakan xlsx-js-style untuk mendukung styling warna & border pada Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
@@ -411,12 +411,21 @@
             }
         }
 
-        // EXPORT KE EXCEL (.XLSX) RAPI BERGARIS DAN TERPISAH PER KOLOM
+        // EXPORT KE EXCEL RAPI (.XLSX) DENGAN STYLING DAN PENGURUTAN
         function exportToExcel() {
             if (pklData.length === 0) { showToast("Tidak ada data untuk di-export.", "error"); return; }
             
-            // 1. Susun header dan data berbentuk array of objects
-            const excelRows = pklData.map((row, idx) => {
+            showToast("Sedang memproses dokumen Excel...", "info");
+
+            // 1. Sort Data Berdasarkan KECAMATAN (A-Z)
+            const sortedData = [...pklData].sort((a, b) => {
+                const kecA = (a.kecamatan || '').toLowerCase();
+                const kecB = (b.kecamatan || '').toLowerCase();
+                return kecA.localeCompare(kecB);
+            });
+            
+            // 2. Susun data menjadi format array object
+            const excelRows = sortedData.map((row, idx) => {
                 let formattedWaktu = '-';
                 if(row.waktu) {
                     formattedWaktu = new Date(row.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -437,12 +446,12 @@
                 };
             });
 
-            // 2. Buat sheet Excel
+            // 3. Konversi ke Worksheet
             const worksheet = XLSX.utils.json_to_sheet(excelRows);
 
-            // 3. Atur lebar kolom otomatis agar tulisan rapi dan tidak terpotong
+            // 4. Atur Lebar Kolom (Column Width)
             worksheet['!cols'] = [
-                { wch: 6 },   // No
+                { wch: 5 },   // No
                 { wch: 18 },  // Ref ID
                 { wch: 18 },  // Kategori Laporan
                 { wch: 18 },  // Kecamatan
@@ -455,15 +464,56 @@
                 { wch: 30 }   // Dokumentasi
             ];
 
-            // 4. Buat workbook Excel
+            // 5. Tambahkan Styling (Background Color Header, Font Color, dan Border Tabel)
+            const range = XLSX.utils.decode_range(worksheet['!ref']);
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const address = XLSX.utils.encode_cell({ r: R, c: C });
+                    if (!worksheet[address]) continue;
+                    
+                    if (R === 0) {
+                        // Style Baris Judul (Header)
+                        worksheet[address].s = {
+                            fill: { fgColor: { rgb: "1E3A8A" } }, // Warna Biru Tua
+                            font: { color: { rgb: "FFFFFF" }, bold: true, name: "Arial" }, // Tulisan Putih Tebal
+                            alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                            border: { 
+                                top: { style: "medium", color: { rgb: "000000" } }, 
+                                bottom: { style: "medium", color: { rgb: "000000" } }, 
+                                left: { style: "thin", color: { rgb: "000000" } }, 
+                                right: { style: "thin", color: { rgb: "000000" } } 
+                            }
+                        };
+                    } else {
+                        // Style Isi Data Tabel
+                        worksheet[address].s = {
+                            alignment: { vertical: "top", wrapText: true },
+                            border: { 
+                                top: { style: "thin", color: { rgb: "CCCCCC" } }, 
+                                bottom: { style: "thin", color: { rgb: "CCCCCC" } }, 
+                                left: { style: "thin", color: { rgb: "CCCCCC" } }, 
+                                right: { style: "thin", color: { rgb: "CCCCCC" } } 
+                            }
+                        };
+                        
+                        // Menengahkan text untuk kolom tertentu (No, Ref, Kategori, Jumlah, Tanggal)
+                        if (C === 0 || C === 1 || C === 2 || C === 6 || C === 7) {
+                            worksheet[address].s.alignment.horizontal = "center";
+                        }
+                    }
+                }
+            }
+
+            // 6. Buat Workbook dan Mulai Download
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Data Master BAGTAPEM");
 
-            // 5. Unduh sebagai file .xlsx murni
             const fileName = `Rekap_Pendataan_BAGTAPEM_${new Date().toISOString().split('T')[0]}.xlsx`;
             XLSX.writeFile(workbook, fileName);
 
-            showToast("Berhasil terunduh sebagai file Excel (.xlsx) rapi!", "success");
+            setTimeout(() => {
+                showToast("Berhasil terunduh sebagai file Excel (.xlsx) rapi!", "success");
+            }, 500);
         }
 
         document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
