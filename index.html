@@ -556,123 +556,135 @@
             }
         }
 
-        // EXPORT KE EXCEL (Hanya Export Data yang Difilter/Tampil)
+        // FUNGSI MULTI-SHEET EXPORT EXCEL (Format Rapi)
         function exportToExcel() {
             if (currentFilteredData.length === 0) { showToast("Tidak ada data untuk di-export.", "error"); return; }
             
             showToast("Sedang memproses dokumen Excel...", "info");
-
-            // 1. Sort Data Berdasarkan KECAMATAN (A-Z) agar tidak terpisah-pisah
-            const sortedData = [...currentFilteredData].sort((a, b) => {
-                const kecA = (a.kecamatan || '').toLowerCase();
-                const kecB = (b.kecamatan || '').toLowerCase();
-                return kecA.localeCompare(kecB);
-            });
             
-            // 2. Susun data menjadi format array object
-            const excelRows = sortedData.map((row, idx) => {
-                let formattedWaktu = '-';
-                if(row.waktu) {
-                    formattedWaktu = new Date(row.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            // Inisialisasi Workbook baru
+            const workbook = XLSX.utils.book_new();
+
+            // Fungsi pembantu untuk membuat dan memformat satu Sheet (lembar)
+            const buildSheet = (dataArray, sheetName) => {
+                // Jika data kosong pada kategori tertentu, berikan baris informasi kosong agar tidak error
+                if (dataArray.length === 0) {
+                    const wsEmpty = XLSX.utils.json_to_sheet([{ "Informasi": "Tidak ada laporan pada kategori ini" }]);
+                    XLSX.utils.book_append_sheet(workbook, wsEmpty, sheetName);
+                    return;
                 }
 
-                // Cek status dokumen (PDF Baru vs Foto Lama)
-                let statusDokumen = "Tidak Ada Dokumen";
-                if (row.dokumentasi_pdf && row.dokumentasi_pdf.some(p => p !== null)) {
-                    // Kumpulkan nama file PDF yang valid
-                    const validNames = [];
-                    row.dokumentasi_pdf.forEach((pdf, i) => {
-                        if (pdf) {
-                            validNames.push((row.dokumentasi_names && row.dokumentasi_names[i]) ? row.dokumentasi_names[i] : `Dokumen_${i+1}.pdf`);
-                        }
-                    });
-                    statusDokumen = `Tersedia ${validNames.length} PDF: ${validNames.join(", ")}`;
-                } else if (row.dokumentasi) {
-                    statusDokumen = "Tersedia (Foto Cloud Base64 Lama)";
-                }
+                // 1. Sort Data Berdasarkan KECAMATAN (A-Z) agar rapi
+                const sortedData = [...dataArray].sort((a, b) => {
+                    const kecA = (a.kecamatan || '').toLowerCase();
+                    const kecB = (b.kecamatan || '').toLowerCase();
+                    return kecA.localeCompare(kecB);
+                });
+                
+                // 2. Susun Object per baris
+                const excelRows = sortedData.map((row, idx) => {
+                    let formattedWaktu = '-';
+                    if(row.waktu) {
+                        formattedWaktu = new Date(row.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                    }
 
-                return {
-                    "No": idx + 1,
-                    "Ref ID": row.id || '-',
-                    "Kategori Laporan": row.kategori_laporan || '-',
-                    "Kecamatan": row.kecamatan || '-',
-                    "Kelurahan": row.kelurahan || '-',
-                    "Lokasi / Jalan & RW": (row.lokasi || row.jalan || '-').replace(/\n/g, " | "),
-                    "Jumlah Kuantitas (Unit)": parseInt(row.jumlah) || 0,
-                    "Tanggal Data": formattedWaktu,
-                    "Keterangan Rincian": (row.datapkl || '-').replace(/\n/g, " | "),
-                    "Keterangan Tambahan": (row.keterangan || '-').replace(/\n/g, " "),
-                    "Status Dokumentasi": statusDokumen
-                };
-            });
-
-            // 3. Konversi ke Worksheet
-            const worksheet = XLSX.utils.json_to_sheet(excelRows);
-
-            // 4. Atur Lebar Kolom (Column Width)
-            worksheet['!cols'] = [
-                { wch: 5 },   // No
-                { wch: 18 },  // Ref ID
-                { wch: 20 },  // Kategori Laporan
-                { wch: 18 },  // Kecamatan
-                { wch: 20 },  // Kelurahan
-                { wch: 40 },  // Lokasi
-                { wch: 22 },  // Jumlah Lapak
-                { wch: 20 },  // Tanggal
-                { wch: 45 },  // Rincian Keterangan
-                { wch: 35 },  // Keterangan Tambahan
-                { wch: 50 }   // Dokumentasi
-            ];
-
-            // 5. Tambahkan Styling (Background Color Header, Font Color, dan Border Tabel)
-            const range = XLSX.utils.decode_range(worksheet['!ref']);
-            for (let R = range.s.r; R <= range.e.r; ++R) {
-                for (let C = range.s.c; C <= range.e.c; ++C) {
-                    const address = XLSX.utils.encode_cell({ r: R, c: C });
-                    if (!worksheet[address]) continue;
-                    
-                    if (R === 0) {
-                        // Style Baris Judul (Header)
-                        worksheet[address].s = {
-                            fill: { fgColor: { rgb: "1E3A8A" } }, // Warna Biru Tua
-                            font: { color: { rgb: "FFFFFF" }, bold: true, name: "Arial" }, // Tulisan Putih Tebal
-                            alignment: { horizontal: "center", vertical: "center", wrapText: true },
-                            border: { 
-                                top: { style: "medium", color: { rgb: "000000" } }, 
-                                bottom: { style: "medium", color: { rgb: "000000" } }, 
-                                left: { style: "thin", color: { rgb: "000000" } }, 
-                                right: { style: "thin", color: { rgb: "000000" } } 
+                    // Cek status dokumen
+                    let statusDokumen = "Tidak Ada Dokumen";
+                    if (row.dokumentasi_pdf && row.dokumentasi_pdf.some(p => p !== null)) {
+                        const validNames = [];
+                        row.dokumentasi_pdf.forEach((pdf, i) => {
+                            if (pdf) {
+                                validNames.push((row.dokumentasi_names && row.dokumentasi_names[i]) ? row.dokumentasi_names[i] : `Dokumen_${i+1}.pdf`);
                             }
-                        };
-                    } else {
-                        // Style Isi Data Tabel
-                        worksheet[address].s = {
-                            alignment: { vertical: "top", wrapText: true },
-                            border: { 
-                                top: { style: "thin", color: { rgb: "CCCCCC" } }, 
-                                bottom: { style: "thin", color: { rgb: "CCCCCC" } }, 
-                                left: { style: "thin", color: { rgb: "CCCCCC" } }, 
-                                right: { style: "thin", color: { rgb: "CCCCCC" } } 
-                            }
-                        };
+                        });
+                        statusDokumen = `Tersedia ${validNames.length} PDF: ${validNames.join(", ")}`;
+                    } else if (row.dokumentasi) {
+                        statusDokumen = "Tersedia (Foto Cloud Base64 Lama)";
+                    }
+
+                    return {
+                        "No": idx + 1,
+                        "Ref ID": row.id || '-',
+                        "Kategori Laporan": row.kategori_laporan || '-',
+                        "Kecamatan": row.kecamatan || '-',
+                        "Kelurahan": row.kelurahan || '-',
+                        "Lokasi / Jalan & RW": (row.lokasi || row.jalan || '-').replace(/\n/g, " | "),
+                        "Jumlah Kuantitas (Unit)": parseInt(row.jumlah) || 0,
+                        "Tanggal Data": formattedWaktu,
+                        "Keterangan Rincian": (row.datapkl || '-').replace(/\n/g, " | "),
+                        "Keterangan Tambahan": (row.keterangan || '-').replace(/\n/g, " "),
+                        "Status Dokumentasi": statusDokumen
+                    };
+                });
+
+                // 3. Konversi array object ke worksheet
+                const worksheet = XLSX.utils.json_to_sheet(excelRows);
+
+                // 4. Atur Lebar Kolom (Sama untuk setiap sheet)
+                worksheet['!cols'] = [
+                    { wch: 5 },   // No
+                    { wch: 18 },  // Ref ID
+                    { wch: 20 },  // Kategori Laporan
+                    { wch: 18 },  // Kecamatan
+                    { wch: 20 },  // Kelurahan
+                    { wch: 40 },  // Lokasi
+                    { wch: 22 },  // Jumlah Lapak
+                    { wch: 20 },  // Tanggal
+                    { wch: 45 },  // Rincian Keterangan
+                    { wch: 35 },  // Keterangan Tambahan
+                    { wch: 50 }   // Dokumentasi
+                ];
+
+                // 5. Tambahkan Styling Warna & Border
+                const range = XLSX.utils.decode_range(worksheet['!ref']);
+                for (let R = range.s.r; R <= range.e.r; ++R) {
+                    for (let C = range.s.c; C <= range.e.c; ++C) {
+                        const address = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!worksheet[address]) continue;
                         
-                        // Menengahkan text untuk kolom tertentu (No, Ref, Kategori, Jumlah, Tanggal)
-                        if (C === 0 || C === 1 || C === 2 || C === 6 || C === 7) {
-                            worksheet[address].s.alignment.horizontal = "center";
+                        if (R === 0) {
+                            // Style Header Tabel
+                            worksheet[address].s = {
+                                fill: { fgColor: { rgb: "1E3A8A" } },
+                                font: { color: { rgb: "FFFFFF" }, bold: true, name: "Arial" },
+                                alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                                border: { top: { style: "medium", color: "000000" }, bottom: { style: "medium", color: "000000" }, left: { style: "thin", color: "000000" }, right: { style: "thin", color: "000000" } }
+                            };
+                        } else {
+                            // Style Data Content Tabel
+                            worksheet[address].s = {
+                                alignment: { vertical: "top", wrapText: true },
+                                border: { top: { style: "thin", color: "CCCCCC" }, bottom: { style: "thin", color: "CCCCCC" }, left: { style: "thin", color: "CCCCCC" }, right: { style: "thin", color: "CCCCCC" } }
+                            };
+                            // Menengahkan Data
+                            if (C === 0 || C === 1 || C === 2 || C === 6 || C === 7) {
+                                worksheet[address].s.alignment.horizontal = "center";
+                            }
                         }
                     }
                 }
-            }
 
-            // 6. Buat Workbook dan Mulai Download
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Data Master BAGTAPEM");
+                // 6. Masukkan sheet ke dalam workbook
+                XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+            };
 
+            // Pisahkan data per kategori berdasarkan teks pencarian ringan
+            const dataBangli = currentFilteredData.filter(d => (d.kategori_laporan || '').toLowerCase() === 'bangli');
+            const dataPkl = currentFilteredData.filter(d => (d.kategori_laporan || '').toLowerCase() === 'pkl');
+            const dataSpanduk = currentFilteredData.filter(d => (d.kategori_laporan || '').toLowerCase().includes('spanduk'));
+
+            // Buat urutan tab (sheet) dalam Excel
+            buildSheet(currentFilteredData, "Semua Data");
+            buildSheet(dataBangli, "Data BANGLI");
+            buildSheet(dataPkl, "Data PKL");
+            buildSheet(dataSpanduk, "Data SPANDUK");
+
+            // Unduh file
             const fileName = `Rekap_Pendataan_BAGTAPEM_${new Date().toISOString().split('T')[0]}.xlsx`;
             XLSX.writeFile(workbook, fileName);
 
             setTimeout(() => {
-                showToast("Berhasil terunduh sebagai file Excel (.xlsx) rapi!", "success");
+                showToast("Berhasil terunduh dengan Format Multi-Sheet!", "success");
             }, 500);
         }
     </script>
