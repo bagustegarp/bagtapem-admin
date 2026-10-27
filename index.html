@@ -225,7 +225,7 @@
                 <!-- BAGIAN UNTUK PDF LIST DI MODAL -->
                 <div class="space-y-2">
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">File Dokumen Lapangan</span>
-                    <div id="detail-pdf-container" class="w-full h-56 bg-slate-100 rounded-2xl overflow-y-auto border border-slate-200 shadow-inner p-4 flex flex-col gap-3">
+                    <div id="detail-pdf-container" class="w-full h-56 bg-slate-100 rounded-2xl overflow-y-auto border border-slate-200 shadow-inner p-3 flex flex-col gap-2">
                         <!-- Daftar PDF akan diinjeksi melalui JavaScript -->
                     </div>
                 </div>
@@ -431,6 +431,35 @@
                 document.getElementById('stat-last-update').innerText = '-'; 
             }
         }
+        
+        // FUNGSI UNTUK MEMBUKA PREVIEW PDF DI TAB BARU SECARA NATIVE
+        function previewPDFInTab(rowIndex, pdfIndex) {
+            try {
+                const item = currentFilteredData[rowIndex];
+                const base64Data = item.dokumentasi_pdf[pdfIndex];
+                if(!base64Data) return;
+                
+                // Pisahkan string header Base64
+                const arr = base64Data.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while(n--){
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                
+                // Buat Blob dan generate Object URL
+                const blob = new Blob([u8arr], {type: mime});
+                const url = URL.createObjectURL(blob);
+                
+                // Buka di tab baru (Akan otomatis terbuka oleh pembaca PDF bawaan browser)
+                window.open(url, '_blank');
+            } catch(e) {
+                console.error(e);
+                showToast("Gagal memuat preview PDF.", "error");
+            }
+        }
 
         // MODAL DETAIL ANIMATION
         function viewDetail(index) {
@@ -445,7 +474,7 @@
             document.getElementById('detail-datapkl').innerText = item.datapkl || '-';
             document.getElementById('detail-keterangan').innerText = item.keterangan || '-';
             
-            // --- LOGIKA MENAMPILKAN PDF (MENDUKUNG FORMAT BARU ARRAY PDF MAUPUN LAMA IMAGE) ---
+            // --- LOGIKA MENAMPILKAN PDF (DENGAN TOMBOL PREVIEW & UNDUH) ---
             const pdfContainer = document.getElementById('detail-pdf-container');
             pdfContainer.innerHTML = ''; // Kosongkan dahulu
             
@@ -456,14 +485,21 @@
                         hasFiles = true;
                         const pdfName = (item.dokumentasi_names && item.dokumentasi_names[i]) ? item.dokumentasi_names[i] : `Dokumen_${i+1}.pdf`;
                         pdfContainer.innerHTML += `
-                            <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-                                <div class="flex items-center gap-3 overflow-hidden">
-                                    <i data-lucide="file-check-2" class="w-5 h-5 text-emerald-600 shrink-0"></i>
-                                    <span class="text-[11px] font-bold text-slate-700 truncate">${pdfName}</span>
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm gap-3">
+                                <div class="flex items-center gap-3 overflow-hidden w-full">
+                                    <div class="bg-emerald-50 p-2 rounded-lg text-emerald-600 shrink-0">
+                                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="text-[11px] font-bold text-slate-700 truncate w-full" title="${pdfName}">${pdfName}</span>
                                 </div>
-                                <a href="${pdfBase64}" download="${pdfName}" class="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg text-[10px] font-bold transition-colors shadow-sm whitespace-nowrap">
-                                    Buka / Unduh
-                                </a>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <button onclick="previewPDFInTab(${index}, ${i})" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-lg text-[10px] font-bold transition-colors shadow-sm flex items-center gap-1">
+                                        <i data-lucide="eye" class="w-3 h-3"></i> Preview
+                                    </button>
+                                    <a href="${pdfBase64}" download="${pdfName}" class="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg text-[10px] font-bold transition-colors shadow-sm flex items-center gap-1">
+                                        <i data-lucide="download" class="w-3 h-3"></i> Unduh
+                                    </a>
+                                </div>
                             </div>
                         `;
                     }
