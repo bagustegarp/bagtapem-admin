@@ -567,55 +567,67 @@
 
             // Fungsi pembantu untuk membuat dan memformat satu Sheet (lembar)
             const buildSheet = (dataArray, sheetName) => {
-                // Jika data kosong pada kategori tertentu, berikan baris informasi kosong agar tidak error
+                let excelRows = [];
+
+                // Jika data kosong, buat 1 baris dummy agar format judul (header) tetap terbentuk
                 if (dataArray.length === 0) {
-                    const wsEmpty = XLSX.utils.json_to_sheet([{ "Informasi": "Tidak ada laporan pada kategori ini" }]);
-                    XLSX.utils.book_append_sheet(workbook, wsEmpty, sheetName);
-                    return;
+                    excelRows = [{
+                        "No": "-",
+                        "Ref ID": "Tidak ada laporan pada kategori ini",
+                        "Kategori Laporan": "-",
+                        "Kecamatan": "-",
+                        "Kelurahan": "-",
+                        "Lokasi / Jalan & RW": "-",
+                        "Jumlah Kuantitas (Unit)": "-",
+                        "Tanggal Data": "-",
+                        "Keterangan Rincian": "-",
+                        "Keterangan Tambahan": "-",
+                        "Status Dokumentasi": "-"
+                    }];
+                } else {
+                    // 1. Sort Data Berdasarkan KECAMATAN (A-Z) agar rapi
+                    const sortedData = [...dataArray].sort((a, b) => {
+                        const kecA = (a.kecamatan || '').toLowerCase();
+                        const kecB = (b.kecamatan || '').toLowerCase();
+                        return kecA.localeCompare(kecB);
+                    });
+                    
+                    // 2. Susun Object per baris
+                    excelRows = sortedData.map((row, idx) => {
+                        let formattedWaktu = '-';
+                        if(row.waktu) {
+                            formattedWaktu = new Date(row.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                        }
+
+                        // Cek status dokumen
+                        let statusDokumen = "Tidak Ada Dokumen";
+                        if (row.dokumentasi_pdf && row.dokumentasi_pdf.some(p => p !== null)) {
+                            const validNames = [];
+                            row.dokumentasi_pdf.forEach((pdf, i) => {
+                                if (pdf) {
+                                    validNames.push((row.dokumentasi_names && row.dokumentasi_names[i]) ? row.dokumentasi_names[i] : `Dokumen_${i+1}.pdf`);
+                                }
+                            });
+                            statusDokumen = `Tersedia ${validNames.length} PDF: ${validNames.join(", ")}`;
+                        } else if (row.dokumentasi) {
+                            statusDokumen = "Tersedia (Foto Cloud Base64 Lama)";
+                        }
+
+                        return {
+                            "No": idx + 1,
+                            "Ref ID": row.id || '-',
+                            "Kategori Laporan": row.kategori_laporan || '-',
+                            "Kecamatan": row.kecamatan || '-',
+                            "Kelurahan": row.kelurahan || '-',
+                            "Lokasi / Jalan & RW": (row.lokasi || row.jalan || '-').replace(/\n/g, " | "),
+                            "Jumlah Kuantitas (Unit)": parseInt(row.jumlah) || 0,
+                            "Tanggal Data": formattedWaktu,
+                            "Keterangan Rincian": (row.datapkl || '-').replace(/\n/g, " | "),
+                            "Keterangan Tambahan": (row.keterangan || '-').replace(/\n/g, " "),
+                            "Status Dokumentasi": statusDokumen
+                        };
+                    });
                 }
-
-                // 1. Sort Data Berdasarkan KECAMATAN (A-Z) agar rapi
-                const sortedData = [...dataArray].sort((a, b) => {
-                    const kecA = (a.kecamatan || '').toLowerCase();
-                    const kecB = (b.kecamatan || '').toLowerCase();
-                    return kecA.localeCompare(kecB);
-                });
-                
-                // 2. Susun Object per baris
-                const excelRows = sortedData.map((row, idx) => {
-                    let formattedWaktu = '-';
-                    if(row.waktu) {
-                        formattedWaktu = new Date(row.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                    }
-
-                    // Cek status dokumen
-                    let statusDokumen = "Tidak Ada Dokumen";
-                    if (row.dokumentasi_pdf && row.dokumentasi_pdf.some(p => p !== null)) {
-                        const validNames = [];
-                        row.dokumentasi_pdf.forEach((pdf, i) => {
-                            if (pdf) {
-                                validNames.push((row.dokumentasi_names && row.dokumentasi_names[i]) ? row.dokumentasi_names[i] : `Dokumen_${i+1}.pdf`);
-                            }
-                        });
-                        statusDokumen = `Tersedia ${validNames.length} PDF: ${validNames.join(", ")}`;
-                    } else if (row.dokumentasi) {
-                        statusDokumen = "Tersedia (Foto Cloud Base64 Lama)";
-                    }
-
-                    return {
-                        "No": idx + 1,
-                        "Ref ID": row.id || '-',
-                        "Kategori Laporan": row.kategori_laporan || '-',
-                        "Kecamatan": row.kecamatan || '-',
-                        "Kelurahan": row.kelurahan || '-',
-                        "Lokasi / Jalan & RW": (row.lokasi || row.jalan || '-').replace(/\n/g, " | "),
-                        "Jumlah Kuantitas (Unit)": parseInt(row.jumlah) || 0,
-                        "Tanggal Data": formattedWaktu,
-                        "Keterangan Rincian": (row.datapkl || '-').replace(/\n/g, " | "),
-                        "Keterangan Tambahan": (row.keterangan || '-').replace(/\n/g, " "),
-                        "Status Dokumentasi": statusDokumen
-                    };
-                });
 
                 // 3. Konversi array object ke worksheet
                 const worksheet = XLSX.utils.json_to_sheet(excelRows);
@@ -623,7 +635,7 @@
                 // 4. Atur Lebar Kolom (Sama untuk setiap sheet)
                 worksheet['!cols'] = [
                     { wch: 5 },   // No
-                    { wch: 18 },  // Ref ID
+                    { wch: 25 },  // Ref ID (diperlebar sedikit agar teks "Tidak ada laporan..." muat)
                     { wch: 20 },  // Kategori Laporan
                     { wch: 18 },  // Kecamatan
                     { wch: 20 },  // Kelurahan
@@ -648,13 +660,23 @@
                                 fill: { fgColor: { rgb: "1E3A8A" } },
                                 font: { color: { rgb: "FFFFFF" }, bold: true, name: "Arial" },
                                 alignment: { horizontal: "center", vertical: "center", wrapText: true },
-                                border: { top: { style: "medium", color: "000000" }, bottom: { style: "medium", color: "000000" }, left: { style: "thin", color: "000000" }, right: { style: "thin", color: "000000" } }
+                                border: { 
+                                    top: { style: "medium", color: { rgb: "000000" } }, 
+                                    bottom: { style: "medium", color: { rgb: "000000" } }, 
+                                    left: { style: "thin", color: { rgb: "000000" } }, 
+                                    right: { style: "thin", color: { rgb: "000000" } } 
+                                }
                             };
                         } else {
                             // Style Data Content Tabel
                             worksheet[address].s = {
                                 alignment: { vertical: "top", wrapText: true },
-                                border: { top: { style: "thin", color: "CCCCCC" }, bottom: { style: "thin", color: "CCCCCC" }, left: { style: "thin", color: "CCCCCC" }, right: { style: "thin", color: "CCCCCC" } }
+                                border: { 
+                                    top: { style: "thin", color: { rgb: "CCCCCC" } }, 
+                                    bottom: { style: "thin", color: { rgb: "CCCCCC" } }, 
+                                    left: { style: "thin", color: { rgb: "CCCCCC" } }, 
+                                    right: { style: "thin", color: { rgb: "CCCCCC" } } 
+                                }
                             };
                             // Menengahkan Data
                             if (C === 0 || C === 1 || C === 2 || C === 6 || C === 7) {
