@@ -119,7 +119,7 @@
                     <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="layers" class="w-7 h-7"></i></div>
                 </div>
 
-                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-emerald-500 flex items-center justify-between hover:shadow-md transition-all">
+                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-emerald-50 flex items-center justify-between hover:shadow-md transition-all">
                     <div>
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Pembaruan Terakhir</p>
                         <h3 class="text-base font-extrabold text-slate-900 mt-2" id="stat-last-update">-</h3>
@@ -335,7 +335,9 @@
 
         // LISTEN REALTIME FIREBASE
         function listenRealtimeData() {
-            database.ref('pkl_reports').on('value', (snapshot) => {
+            // PERUBAHAN: Menambahkan .limitToLast(20) agar menarik maksimal 20 laporan terbaru
+            // Ini mencegah error "payload is too large" akibat penumpukan file Base64 PDF.
+            database.ref('pkl_reports').limitToLast(20).on('value', (snapshot) => {
                 const data = snapshot.val();
                 pklData = [];
                 if (data) {
