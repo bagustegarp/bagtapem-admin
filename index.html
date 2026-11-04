@@ -66,6 +66,7 @@
                 </button>
             </form>
             
+            <!-- Tambahan Watermark karyaanaktelkom -->
             <p class="text-[10px] text-slate-400 font-bold tracking-widest uppercase opacity-70 mt-2">
                 @karyaanaktelkom
             </p>
@@ -330,15 +331,15 @@
 
         function logout() { location.reload(); }
 
+        // LISTEN REALTIME FIREBASE UNTUK TAMPILKAN SEMUA DATA
         function listenRealtimeData() {
-            // Kembali menggunakan limitToLast(100) sebagai pengaman kestabilan browser terhadap file PDF besar
-            database.ref('pkl_reports').limitToLast(100).on('value', (snapshot) => {
-                const data = snapshot.val();
+            database.ref('pkl_reports').on('value', (snapshot) => {
                 pklData = [];
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        const item = data[key];
-                        item.firebaseKey = key;
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const item = childSnapshot.val();
+                        item.firebaseKey = childSnapshot.key;
+                        // Menggunakan unshift agar data terbaru berada di posisi paling atas
                         pklData.unshift(item);
                     });
                 }
