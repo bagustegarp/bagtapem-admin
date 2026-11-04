@@ -119,7 +119,7 @@
                     <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="layers" class="w-7 h-7"></i></div>
                 </div>
 
-                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-emerald-50 flex items-center justify-between hover:shadow-md transition-all">
+                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-emerald-500 flex items-center justify-between hover:shadow-md transition-all">
                     <div>
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Pembaruan Terakhir</p>
                         <h3 class="text-base font-extrabold text-slate-900 mt-2" id="stat-last-update">-</h3>
@@ -271,9 +271,8 @@
         const database = firebase.database();
 
         let pklData = [];
-        let currentFilteredData = []; // Data tersaring untuk render dan export
+        let currentFilteredData = []; 
 
-        // POPULATE DROPDOWN WILAYAH (KECAMATAN BANDUNG)
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             const wilayahSelect = document.getElementById('filter-wilayah');
@@ -294,7 +293,6 @@
             });
         });
 
-        // TOAST NOTIFICATION
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -333,26 +331,22 @@
 
         function logout() { location.reload(); }
 
-        // LISTEN REALTIME FIREBASE
+        // LISTEN REALTIME FIREBASE TANPA BATAS (LIMIT DIHAPUS)
         function listenRealtimeData() {
-            // PERUBAHAN: Menambahkan .limitToLast(100) agar menarik 100 laporan terbaru
-            database.ref('pkl_reports').limitToLast(100).on('value', (snapshot) => {
+            database.ref('pkl_reports').on('value', (snapshot) => {
                 const data = snapshot.val();
                 pklData = [];
                 if (data) {
                     Object.keys(data).forEach(key => {
                         const item = data[key];
-                        item.firebaseKey = key; // Simpan key asli Firebase
+                        item.firebaseKey = key;
                         pklData.unshift(item);
                     });
                 }
-                
-                // Menerapkan filter awal (menampilkan semua)
                 filterTable();
             });
         }
 
-        // FUNGSI FILTER UTAMA (Mencakup Search, Kategori, Wilayah)
         function filterTable() {
             const query = document.getElementById('search-input').value.toLowerCase();
             const filterKat = document.getElementById('filter-kategori').value.toLowerCase();
@@ -365,7 +359,6 @@
                 const kel = (item.kelurahan || '').toLowerCase();
                 const lok = (item.lokasi || item.jalan || '').toLowerCase();
                 
-                // Logika Pencocokan
                 const matchSearch = ref.includes(query) || kel.includes(query) || lok.includes(query) || kec.includes(query);
                 const matchKat = (filterKat === "" || kat === filterKat);
                 const matchWil = (filterWil === "" || kec === filterWil);
@@ -374,10 +367,9 @@
             });
             
             renderTable(currentFilteredData);
-            updateStats(currentFilteredData); // Memperbarui Box Statistik di atas sesuai filter
+            updateStats(currentFilteredData);
         }
 
-        // RENDER TABEL HTML
         function renderTable(data) {
             const tbody = document.getElementById('table-body');
             const emptyState = document.getElementById('empty-state');
@@ -409,7 +401,6 @@
                     <td class="px-6 py-4"><p class="font-bold text-slate-800 truncate max-w-[200px] text-xs">${item.lokasi || item.jalan || '-'}</p><p class="text-[11px] font-black text-amber-600 mt-0.5">${item.jumlah || 0} Unit</p></td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center space-x-2">
-                            <!-- Index yg dipassing adalah index dari array currentFilteredData -->
                             <button onclick="viewDetail(${index})" class="p-2 bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg transition-all" title="Lihat Detail"><i data-lucide="eye" class="w-4 h-4"></i></button>
                             <button onclick="deleteCloudRow('${item.firebaseKey}')" class="p-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
@@ -420,7 +411,6 @@
             lucide.createIcons();
         }
 
-        // UPDATE KOTAK STATISTIK (Dinamis terhadap Filter)
         function updateStats(data) {
             document.getElementById('stat-total-laporan').innerText = data.length;
             const totalLapak = data.reduce((sum, item) => sum + (parseInt(item.jumlah) || 0), 0);
@@ -433,14 +423,12 @@
             }
         }
         
-        // FUNGSI UNTUK MEMBUKA PREVIEW PDF DI TAB BARU SECARA NATIVE
         function previewPDFInTab(rowIndex, pdfIndex) {
             try {
                 const item = currentFilteredData[rowIndex];
                 const base64Data = item.dokumentasi_pdf[pdfIndex];
                 if(!base64Data) return;
                 
-                // Pisahkan string header Base64
                 const arr = base64Data.split(',');
                 const mime = arr[0].match(/:(.*?);/)[1];
                 const bstr = atob(arr[1]);
@@ -450,11 +438,8 @@
                     u8arr[n] = bstr.charCodeAt(n);
                 }
                 
-                // Buat Blob dan generate Object URL
                 const blob = new Blob([u8arr], {type: mime});
                 const url = URL.createObjectURL(blob);
-                
-                // Buka di tab baru (Akan otomatis terbuka oleh pembaca PDF bawaan browser)
                 window.open(url, '_blank');
             } catch(e) {
                 console.error(e);
@@ -462,7 +447,6 @@
             }
         }
 
-        // MODAL DETAIL ANIMATION
         function viewDetail(index) {
             const item = currentFilteredData[index];
             document.getElementById('detail-id').innerText = `REF: ${item.id || '-'}`;
@@ -475,9 +459,8 @@
             document.getElementById('detail-datapkl').innerText = item.datapkl || '-';
             document.getElementById('detail-keterangan').innerText = item.keterangan || '-';
             
-            // --- LOGIKA MENAMPILKAN PDF (DENGAN TOMBOL PREVIEW & UNDUH) ---
             const pdfContainer = document.getElementById('detail-pdf-container');
-            pdfContainer.innerHTML = ''; // Kosongkan dahulu
+            pdfContainer.innerHTML = ''; 
             
             if (item.dokumentasi_pdf && item.dokumentasi_pdf.length > 0) {
                 let hasFiles = false;
@@ -510,7 +493,6 @@
                     pdfContainer.innerHTML = `<p class="text-[11px] text-slate-400 font-bold text-center mt-10">Tidak ada file PDF terlampir.</p>`;
                 }
             } 
-            // Fallback apabila admin membuka data lama yang masih menggunakan format foto (base64 img)
             else if (item.dokumentasi) {
                 pdfContainer.innerHTML = `
                     <div class="w-full h-full rounded-xl overflow-hidden border border-slate-200 shadow-sm relative group">
@@ -526,7 +508,6 @@
 
             lucide.createIcons();
             
-            // Tampilkan Modal
             const modal = document.getElementById('admin-modal');
             const content = document.getElementById('modal-content');
             modal.classList.remove('hidden');
@@ -557,50 +538,34 @@
             }
         }
 
-        // FUNGSI MULTI-SHEET EXPORT EXCEL (Format Rapi)
         function exportToExcel() {
             if (currentFilteredData.length === 0) { showToast("Tidak ada data untuk di-export.", "error"); return; }
             
             showToast("Sedang memproses dokumen Excel...", "info");
-            
-            // Inisialisasi Workbook baru
             const workbook = XLSX.utils.book_new();
 
-            // Fungsi pembantu untuk membuat dan memformat satu Sheet (lembar)
             const buildSheet = (dataArray, sheetName) => {
                 let excelRows = [];
 
-                // Jika data kosong, buat 1 baris dummy agar format judul (header) tetap terbentuk
                 if (dataArray.length === 0) {
                     excelRows = [{
-                        "No": "-",
-                        "Ref ID": "Tidak ada laporan pada kategori ini",
-                        "Kategori Laporan": "-",
-                        "Kecamatan": "-",
-                        "Kelurahan": "-",
-                        "Lokasi / Jalan & RW": "-",
-                        "Jumlah Kuantitas (Unit)": "-",
-                        "Tanggal Data": "-",
-                        "Keterangan Rincian": "-",
-                        "Keterangan Tambahan": "-",
-                        "Status Dokumentasi": "-"
+                        "No": "-", "Ref ID": "Tidak ada laporan pada kategori ini", "Kategori Laporan": "-", "Kecamatan": "-",
+                        "Kelurahan": "-", "Lokasi / Jalan & RW": "-", "Jumlah Kuantitas (Unit)": "-", "Tanggal Data": "-",
+                        "Keterangan Rincian": "-", "Keterangan Tambahan": "-", "Status Dokumentasi": "-"
                     }];
                 } else {
-                    // 1. Sort Data Berdasarkan KECAMATAN (A-Z) agar rapi
                     const sortedData = [...dataArray].sort((a, b) => {
                         const kecA = (a.kecamatan || '').toLowerCase();
                         const kecB = (b.kecamatan || '').toLowerCase();
                         return kecA.localeCompare(kecB);
                     });
                     
-                    // 2. Susun Object per baris
                     excelRows = sortedData.map((row, idx) => {
                         let formattedWaktu = '-';
                         if(row.waktu) {
                             formattedWaktu = new Date(row.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
                         }
 
-                        // Cek status dokumen
                         let statusDokumen = "Tidak Ada Dokumen";
                         if (row.dokumentasi_pdf && row.dokumentasi_pdf.some(p => p !== null)) {
                             const validNames = [];
@@ -615,40 +580,21 @@
                         }
 
                         return {
-                            "No": idx + 1,
-                            "Ref ID": row.id || '-',
-                            "Kategori Laporan": row.kategori_laporan || '-',
-                            "Kecamatan": row.kecamatan || '-',
-                            "Kelurahan": row.kelurahan || '-',
-                            "Lokasi / Jalan & RW": (row.lokasi || row.jalan || '-').replace(/\n/g, " | "),
-                            "Jumlah Kuantitas (Unit)": parseInt(row.jumlah) || 0,
-                            "Tanggal Data": formattedWaktu,
-                            "Keterangan Rincian": (row.datapkl || '-').replace(/\n/g, " | "),
-                            "Keterangan Tambahan": (row.keterangan || '-').replace(/\n/g, " "),
+                            "No": idx + 1, "Ref ID": row.id || '-', "Kategori Laporan": row.kategori_laporan || '-', "Kecamatan": row.kecamatan || '-',
+                            "Kelurahan": row.kelurahan || '-', "Lokasi / Jalan & RW": (row.lokasi || row.jalan || '-').replace(/\n/g, " | "),
+                            "Jumlah Kuantitas (Unit)": parseInt(row.jumlah) || 0, "Tanggal Data": formattedWaktu,
+                            "Keterangan Rincian": (row.datapkl || '-').replace(/\n/g, " | "), "Keterangan Tambahan": (row.keterangan || '-').replace(/\n/g, " "),
                             "Status Dokumentasi": statusDokumen
                         };
                     });
                 }
 
-                // 3. Konversi array object ke worksheet
                 const worksheet = XLSX.utils.json_to_sheet(excelRows);
-
-                // 4. Atur Lebar Kolom (Sama untuk setiap sheet)
                 worksheet['!cols'] = [
-                    { wch: 5 },   // No
-                    { wch: 25 },  // Ref ID (diperlebar sedikit agar teks "Tidak ada laporan..." muat)
-                    { wch: 20 },  // Kategori Laporan
-                    { wch: 18 },  // Kecamatan
-                    { wch: 20 },  // Kelurahan
-                    { wch: 40 },  // Lokasi
-                    { wch: 22 },  // Jumlah Lapak
-                    { wch: 20 },  // Tanggal
-                    { wch: 45 },  // Rincian Keterangan
-                    { wch: 35 },  // Keterangan Tambahan
-                    { wch: 50 }   // Dokumentasi
+                    { wch: 5 }, { wch: 25 }, { wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 40 },
+                    { wch: 22 }, { wch: 20 }, { wch: 45 }, { wch: 35 }, { wch: 50 }
                 ];
 
-                // 5. Tambahkan Styling Warna & Border
                 const range = XLSX.utils.decode_range(worksheet['!ref']);
                 for (let R = range.s.r; R <= range.e.r; ++R) {
                     for (let C = range.s.c; C <= range.e.c; ++C) {
@@ -656,53 +602,35 @@
                         if (!worksheet[address]) continue;
                         
                         if (R === 0) {
-                            // Style Header Tabel
                             worksheet[address].s = {
                                 fill: { fgColor: { rgb: "1E3A8A" } },
                                 font: { color: { rgb: "FFFFFF" }, bold: true, name: "Arial" },
                                 alignment: { horizontal: "center", vertical: "center", wrapText: true },
-                                border: { 
-                                    top: { style: "medium", color: { rgb: "000000" } }, 
-                                    bottom: { style: "medium", color: { rgb: "000000" } }, 
-                                    left: { style: "thin", color: { rgb: "000000" } }, 
-                                    right: { style: "thin", color: { rgb: "000000" } } 
-                                }
+                                border: { top: { style: "medium", color: { rgb: "000000" } }, bottom: { style: "medium", color: { rgb: "000000" } }, left: { style: "thin", color: { rgb: "000000" } }, right: { style: "thin", color: { rgb: "000000" } } }
                             };
                         } else {
-                            // Style Data Content Tabel
                             worksheet[address].s = {
                                 alignment: { vertical: "top", wrapText: true },
-                                border: { 
-                                    top: { style: "thin", color: { rgb: "CCCCCC" } }, 
-                                    bottom: { style: "thin", color: { rgb: "CCCCCC" } }, 
-                                    left: { style: "thin", color: { rgb: "CCCCCC" } }, 
-                                    right: { style: "thin", color: { rgb: "CCCCCC" } } 
-                                }
+                                border: { top: { style: "thin", color: { rgb: "CCCCCC" } }, bottom: { style: "thin", color: { rgb: "CCCCCC" } }, left: { style: "thin", color: { rgb: "CCCCCC" } }, right: { style: "thin", color: { rgb: "CCCCCC" } } }
                             };
-                            // Menengahkan Data
                             if (C === 0 || C === 1 || C === 2 || C === 6 || C === 7) {
                                 worksheet[address].s.alignment.horizontal = "center";
                             }
                         }
                     }
                 }
-
-                // 6. Masukkan sheet ke dalam workbook
                 XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
             };
 
-            // Pisahkan data per kategori berdasarkan teks pencarian ringan
             const dataBangli = currentFilteredData.filter(d => (d.kategori_laporan || '').toLowerCase() === 'bangli');
             const dataPkl = currentFilteredData.filter(d => (d.kategori_laporan || '').toLowerCase() === 'pkl');
             const dataSpanduk = currentFilteredData.filter(d => (d.kategori_laporan || '').toLowerCase().includes('spanduk'));
 
-            // Buat urutan tab (sheet) dalam Excel
             buildSheet(currentFilteredData, "Semua Data");
             buildSheet(dataBangli, "Data BANGLI");
             buildSheet(dataPkl, "Data PKL");
             buildSheet(dataSpanduk, "Data SPANDUK");
 
-            // Unduh file
             const fileName = `Rekap_Pendataan_BAGTAPEM_${new Date().toISOString().split('T')[0]}.xlsx`;
             XLSX.writeFile(workbook, fileName);
 
