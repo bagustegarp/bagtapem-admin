@@ -9,9 +9,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Firebase SDK (v8) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- Supabase JS SDK (v2) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Menggunakan xlsx-js-style untuk mendukung styling warna & border pada Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
@@ -21,10 +20,8 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
         .glass-panel { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.8); }
         
-        /* Watermark Logo */
         .watermark-bg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; max-width: 800px; opacity: 0.15; pointer-events: none; z-index: 0; filter: grayscale(20%); }
         
-        /* Animated Background Blobs */
         @keyframes blob { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
         .animate-blob { animation: blob 8s infinite; }
         .animation-delay-2000 { animation-delay: 2s; }
@@ -35,23 +32,18 @@
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col justify-between relative overflow-x-hidden bg-slate-50">
 
-    <!-- Latar Belakang Estetik (Animated Blobs) -->
     <div class="fixed top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
         <div class="absolute -top-40 -left-10 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
         <div class="absolute top-40 -right-20 w-96 h-96 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
         <div class="absolute -bottom-40 left-1/3 w-[30rem] h-[30rem] bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
     </div>
 
-    <!-- Watermark Logo di Tengah -->
     <img src="logo bagtapem.png" alt="Watermark Bagtapem" class="watermark-bg" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Lambang_Kota_Bandung.svg/1200px-Lambang_Kota_Bandung.svg.png'">
 
-    <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
 
-    <!-- OVERLAY LOGIN PASSWORD ADMIN -->
     <div id="login-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-300">
         <div class="glass-panel bg-white/95 p-8 rounded-3xl max-w-md w-full text-center space-y-6 shadow-2xl border border-white">
-            <!-- LOGO BAGTAPEM PADA LOGIN -->
             <div class="mx-auto flex items-center justify-center">
                 <img src="logo bagtapem.png" alt="Logo BAGTAPEM" class="h-24 w-auto object-contain drop-shadow-md" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Lambang_Kota_Bandung.svg/1200px-Lambang_Kota_Bandung.svg.png'">
             </div>
@@ -72,13 +64,11 @@
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD ADMIN -->
     <div id="dashboard-content" class="hidden flex-col min-h-screen relative z-10">
         <header class="glass-panel sticky top-0 z-40 shadow-sm border-b border-slate-200/80">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-20">
                     <div class="flex items-center space-x-4">
-                        <!-- LOGO KIRI -->
                         <img src="logo bagtapem.png" alt="Logo BAGTAPEM" class="h-12 w-auto object-contain drop-shadow-sm" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Lambang_Kota_Bandung.svg/1200px-Lambang_Kota_Bandung.svg.png'">
                         <div>
                             <h1 class="text-xl font-black text-slate-900 leading-tight tracking-tight">MASTER DASHBOARD</h1>
@@ -100,7 +90,6 @@
         </header>
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
-            <!-- RINGKASAN STATISTIK -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-blue-600 flex items-center justify-between hover:shadow-md transition-all">
                     <div>
@@ -127,19 +116,14 @@
                 </div>
             </div>
 
-            <!-- TABEL DATA -->
             <div class="glass-panel rounded-3xl shadow-sm overflow-hidden border border-white">
-                
-                <!-- HEADER TABEL & FILTER AREA -->
                 <div class="p-6 border-b border-slate-200/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                     <div class="flex-shrink-0">
                         <h2 class="text-lg font-bold text-slate-900">Database Pelaporan Penertiban</h2>
-                        <p class="text-xs font-semibold text-slate-500 mt-0.5">Tersinkronisasi otomatis dari lapangan secara real-time.</p>
+                        <p class="text-xs font-semibold text-slate-500 mt-0.5">Tersinkronisasi otomatis dari Supabase secara real-time.</p>
                     </div>
                     
-                    <!-- AREA FILTER (Kategori, Wilayah, Cari) -->
                     <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-                        <!-- Dropdown Kategori -->
                         <select id="filter-kategori" onchange="filterTable()" class="w-full sm:w-40 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-bold text-slate-700 transition-all outline-none shadow-sm cursor-pointer">
                             <option value="">Semua Kategori</option>
                             <option value="bangli">BANGLI</option>
@@ -147,13 +131,10 @@
                             <option value="spanduk, baliho dan tali-talian">SPANDUK & BALIHO</option>
                         </select>
                         
-                        <!-- Dropdown Wilayah -->
                         <select id="filter-wilayah" onchange="filterTable()" class="w-full sm:w-40 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-bold text-slate-700 transition-all outline-none shadow-sm cursor-pointer">
                             <option value="">Semua Wilayah</option>
-                            <!-- Diisi Otomatis Lewat Javascript -->
                         </select>
 
-                        <!-- Kolom Pencarian -->
                         <div class="relative w-full sm:w-56">
                             <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Cari Ref ID / Lokasi..." class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-semibold transition-all outline-none shadow-sm">
                             <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
@@ -161,7 +142,6 @@
                     </div>
                 </div>
 
-                <!-- TABEL KONTEN -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse" id="data-table">
                         <thead>
@@ -186,7 +166,6 @@
             </div>
         </main>
 
-        <!-- FOOTER ELEGAN -->
         <footer class="bg-white/90 backdrop-blur-md mt-12 py-6 border-t border-slate-200 relative z-20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="flex items-center space-x-3 text-left">
@@ -198,13 +177,12 @@
                 </div>
                 <div class="flex items-center space-x-2 bg-slate-50 px-4 py-2 rounded-full border border-slate-200 shadow-sm">
                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-xs font-bold text-slate-600">Bgs@karyaanaktelkom.V1.2</span>
+                    <span class="text-xs font-bold text-slate-600">Bgs@karyaanaktelkom.V3.0 Supabase</span>
                 </div>
             </div>
         </footer>
     </div>
 
-    <!-- MODAL DETAIL ADMIN DENGAN ANIMASI -->
     <div id="admin-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 pointer-events-none">
         <div id="modal-content" class="glass-panel bg-white/95 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto transform scale-95 transition-all duration-300 opacity-0 border border-white">
             <button onclick="closeAdminModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 rounded-full hover:bg-slate-100 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -221,11 +199,9 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- BAGIAN UNTUK PDF LIST DI MODAL -->
                 <div class="space-y-2">
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">File Dokumen Lapangan</span>
                     <div id="detail-pdf-container" class="w-full h-56 bg-slate-100 rounded-2xl overflow-y-auto border border-slate-200 shadow-inner p-3 flex flex-col gap-2">
-                        <!-- Daftar PDF akan diinjeksi melalui JavaScript -->
                     </div>
                 </div>
                 
@@ -254,20 +230,10 @@
         </div>
     </div>
 
-    <!-- LOGIKA JAVASCRIPT MASTER -->
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyD0rc-XdBOnicvQNL8m0tt85Oce-Dd_LZI",
-            authDomain: "bagtapem-db.firebaseapp.com",
-            databaseURL: "https://bagtapem-db-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "bagtapem-db",
-            storageBucket: "bagtapem-db.firebasestorage.app",
-            messagingSenderId: "809415896068",
-            appId: "1:809415896068:web:6207a8b8c658130c9b5951",
-            measurementId: "G-XD3JVDH1NB"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const SUPABASE_URL = "https://iidsvuqubbxphzdjoyhk.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_zopMWE46HXr9jxWSmshe9A_XWgXqQ7K";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let pklData = [];
         let currentFilteredData = []; 
@@ -320,7 +286,7 @@
                     document.getElementById('login-overlay').classList.add('hidden');
                     document.getElementById('dashboard-content').classList.remove('hidden');
                     document.getElementById('dashboard-content').classList.add('flex');
-                    listenRealtimeData();
+                    loadSupabaseData();
                     showToast("Selamat Datang di Master Dashboard Admin", "success");
                 }, 300);
             } else {
@@ -330,20 +296,30 @@
 
         function logout() { location.reload(); }
 
-        function listenRealtimeData() {
-            // Kembali menggunakan limitToLast(100) sebagai pengaman kestabilan browser terhadap file PDF besar
-            database.ref('pkl_reports').limitToLast(100).on('value', (snapshot) => {
-                const data = snapshot.val();
-                pklData = [];
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        const item = data[key];
-                        item.firebaseKey = key;
-                        pklData.unshift(item);
-                    });
-                }
+        async function loadSupabaseData() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('pkl_reports')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                pklData = data || [];
                 filterTable();
-            });
+
+                // Subscribe Realtime ke Supabase PostgreSQL
+                supabaseClient
+                    .channel('public:pkl_reports')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'pkl_reports' }, () => {
+                        loadSupabaseData();
+                    })
+                    .subscribe();
+
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal memuat data: " + err.message, "error");
+            }
         }
 
         function filterTable() {
@@ -352,11 +328,11 @@
             const filterWil = document.getElementById('filter-wilayah').value.toLowerCase();
             
             currentFilteredData = pklData.filter(item => {
-                const ref = (item.id || '').toLowerCase();
+                const ref = (item.ref_id || '').toLowerCase();
                 const kat = (item.kategori_laporan || '').toLowerCase();
                 const kec = (item.kecamatan || '').toLowerCase();
                 const kel = (item.kelurahan || '').toLowerCase();
-                const lok = (item.lokasi || item.jalan || '').toLowerCase();
+                const lok = (item.lokasi || '').toLowerCase();
                 
                 const matchSearch = ref.includes(query) || kel.includes(query) || lok.includes(query) || kec.includes(query);
                 const matchKat = (filterKat === "" || kat === filterKat);
@@ -393,15 +369,15 @@
                 }
 
                 tr.innerHTML = `
-                    <td class="px-6 py-4"><span class="font-mono font-extrabold text-[11px] text-blue-900 bg-blue-100/80 px-2.5 py-1 rounded-md border border-blue-200">${item.id || '-'}</span></td>
+                    <td class="px-6 py-4"><span class="font-mono font-extrabold text-[11px] text-blue-900 bg-blue-100/80 px-2.5 py-1 rounded-md border border-blue-200">${item.ref_id || '-'}</span></td>
                     <td class="px-6 py-4"><span class="font-bold text-[10px] text-slate-700 bg-slate-200/70 px-2 py-1 rounded-md uppercase tracking-wider border border-slate-300">${item.kategori_laporan || 'TIDAK ADA'}</span></td>
                     <td class="px-6 py-4"><span class="text-slate-700 font-bold text-xs">${formattedWaktu}</span></td>
                     <td class="px-6 py-4"><p class="font-extrabold text-slate-900 text-xs">${item.kecamatan || '-'}</p><p class="text-[11px] text-slate-500 font-semibold">${item.kelurahan || '-'}</p></td>
-                    <td class="px-6 py-4"><p class="font-bold text-slate-800 truncate max-w-[200px] text-xs">${item.lokasi || item.jalan || '-'}</p><p class="text-[11px] font-black text-amber-600 mt-0.5">${item.jumlah || 0} Unit</p></td>
+                    <td class="px-6 py-4"><p class="font-bold text-slate-800 truncate max-w-[200px] text-xs">${item.lokasi || '-'}</p><p class="text-[11px] font-black text-amber-600 mt-0.5">${item.jumlah || 0} Unit</p></td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center space-x-2">
                             <button onclick="viewDetail(${index})" class="p-2 bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg transition-all" title="Lihat Detail"><i data-lucide="eye" class="w-4 h-4"></i></button>
-                            <button onclick="deleteCloudRow('${item.firebaseKey}')" class="p-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <button onclick="deleteCloudRow('${item.id}')" class="p-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </td>
                 `;
@@ -421,38 +397,14 @@
                 document.getElementById('stat-last-update').innerText = '-'; 
             }
         }
-        
-        function previewPDFInTab(rowIndex, pdfIndex) {
-            try {
-                const item = currentFilteredData[rowIndex];
-                const base64Data = item.dokumentasi_pdf[pdfIndex];
-                if(!base64Data) return;
-                
-                const arr = base64Data.split(',');
-                const mime = arr[0].match(/:(.*?);/)[1];
-                const bstr = atob(arr[1]);
-                let n = bstr.length;
-                const u8arr = new Uint8Array(n);
-                while(n--){
-                    u8arr[n] = bstr.charCodeAt(n);
-                }
-                
-                const blob = new Blob([u8arr], {type: mime});
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank');
-            } catch(e) {
-                console.error(e);
-                showToast("Gagal memuat preview PDF.", "error");
-            }
-        }
 
         function viewDetail(index) {
             const item = currentFilteredData[index];
-            document.getElementById('detail-id').innerText = `REF: ${item.id || '-'}`;
+            document.getElementById('detail-id').innerText = `REF: ${item.ref_id || '-'}`;
             document.getElementById('detail-kategori').innerText = item.kategori_laporan || 'KATEGORI TIDAK TERSEDIA';
             document.getElementById('detail-kec').innerText = item.kecamatan || '-';
             document.getElementById('detail-kel').innerText = item.kelurahan || '-';
-            document.getElementById('detail-lokasi').innerText = item.lokasi || item.jalan || '-';
+            document.getElementById('detail-lokasi').innerText = item.lokasi || '-';
             document.getElementById('detail-jumlah').innerText = `${item.jumlah || 0} Unit`;
             document.getElementById('detail-waktu').innerText = item.waktu ? new Date(item.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
             document.getElementById('detail-datapkl').innerText = item.datapkl || '-';
@@ -461,48 +413,25 @@
             const pdfContainer = document.getElementById('detail-pdf-container');
             pdfContainer.innerHTML = ''; 
             
-            if (item.dokumentasi_pdf && item.dokumentasi_pdf.length > 0) {
-                let hasFiles = false;
-                item.dokumentasi_pdf.forEach((pdfBase64, i) => {
-                    if (pdfBase64) {
-                        hasFiles = true;
-                        const pdfName = (item.dokumentasi_names && item.dokumentasi_names[i]) ? item.dokumentasi_names[i] : `Dokumen_${i+1}.pdf`;
-                        pdfContainer.innerHTML += `
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm gap-3">
-                                <div class="flex items-center gap-3 overflow-hidden w-full">
-                                    <div class="bg-emerald-50 p-2 rounded-lg text-emerald-600 shrink-0">
-                                        <i data-lucide="file-text" class="w-4 h-4"></i>
-                                    </div>
-                                    <span class="text-[11px] font-bold text-slate-700 truncate w-full" title="${pdfName}">${pdfName}</span>
-                                </div>
-                                <div class="flex items-center gap-2 shrink-0">
-                                    <button onclick="previewPDFInTab(${index}, ${i})" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-lg text-[10px] font-bold transition-colors shadow-sm flex items-center gap-1">
-                                        <i data-lucide="eye" class="w-3 h-3"></i> Preview
-                                    </button>
-                                    <a href="${pdfBase64}" download="${pdfName}" class="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg text-[10px] font-bold transition-colors shadow-sm flex items-center gap-1">
-                                        <i data-lucide="download" class="w-3 h-3"></i> Unduh
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                    }
-                });
-                
-                if (!hasFiles) {
-                    pdfContainer.innerHTML = `<p class="text-[11px] text-slate-400 font-bold text-center mt-10">Tidak ada file PDF terlampir.</p>`;
-                }
-            } 
-            else if (item.dokumentasi) {
+            if (item.pdf_url) {
+                const pdfName = item.pdf_name || `Dokumen_Laporan.pdf`;
                 pdfContainer.innerHTML = `
-                    <div class="w-full h-full rounded-xl overflow-hidden border border-slate-200 shadow-sm relative group">
-                        <img src="${item.dokumentasi}" alt="Foto Lama" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <a href="${item.dokumentasi}" download="Foto_Dokumentasi_Lama.jpg" class="px-4 py-2 bg-white text-slate-900 rounded-lg text-xs font-bold shadow-lg">Download Foto</a>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm gap-3">
+                        <div class="flex items-center gap-3 overflow-hidden w-full">
+                            <div class="bg-emerald-50 p-2 rounded-lg text-emerald-600 shrink-0">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                            </div>
+                            <span class="text-[11px] font-bold text-slate-700 truncate w-full" title="${pdfName}">${pdfName}</span>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <a href="${item.pdf_url}" target="_blank" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-lg text-[10px] font-bold transition-colors shadow-sm flex items-center gap-1">
+                                <i data-lucide="eye" class="w-3 h-3"></i> Lihat PDF
+                            </a>
                         </div>
                     </div>
                 `;
             } else {
-                pdfContainer.innerHTML = `<p class="text-[11px] text-slate-400 font-bold text-center mt-10">Tidak ada dokumen lampiran.</p>`;
+                pdfContainer.innerHTML = `<p class="text-[11px] text-slate-400 font-bold text-center mt-10">Tidak ada dokumen lampiran PDF.</p>`;
             }
 
             lucide.createIcons();
@@ -529,11 +458,16 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        function deleteCloudRow(key) {
+        async function deleteCloudRow(id) {
             if(confirm("Apakah Anda yakin ingin menghapus data ini dari cloud secara permanen?")) {
-                database.ref(`pkl_reports/${key}`).remove()
-                    .then(() => showToast("Data berhasil dihapus dari Cloud", "success"))
-                    .catch(err => showToast("Gagal menghapus: " + err.message, "error"));
+                try {
+                    const { error } = await supabaseClient.from('pkl_reports').delete().eq('id', id);
+                    if (error) throw error;
+                    showToast("Data berhasil dihapus dari Supabase", "success");
+                    loadSupabaseData();
+                } catch (err) {
+                    showToast("Gagal menghapus: " + err.message, "error");
+                }
             }
         }
 
@@ -565,24 +499,19 @@
                             formattedWaktu = new Date(row.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
                         }
 
-                        let statusDokumen = "Tidak Ada Dokumen";
-                        if (row.dokumentasi_pdf && row.dokumentasi_pdf.some(p => p !== null)) {
-                            const validNames = [];
-                            row.dokumentasi_pdf.forEach((pdf, i) => {
-                                if (pdf) {
-                                    validNames.push((row.dokumentasi_names && row.dokumentasi_names[i]) ? row.dokumentasi_names[i] : `Dokumen_${i+1}.pdf`);
-                                }
-                            });
-                            statusDokumen = `Tersedia ${validNames.length} PDF: ${validNames.join(", ")}`;
-                        } else if (row.dokumentasi) {
-                            statusDokumen = "Tersedia (Foto Cloud Base64 Lama)";
-                        }
+                        let statusDokumen = row.pdf_url ? `Tersedia PDF: ${row.pdf_name || 'Link PDF'}` : "Tidak Ada Dokumen";
 
                         return {
-                            "No": idx + 1, "Ref ID": row.id || '-', "Kategori Laporan": row.kategori_laporan || '-', "Kecamatan": row.kecamatan || '-',
-                            "Kelurahan": row.kelurahan || '-', "Lokasi / Jalan & RW": (row.lokasi || row.jalan || '-').replace(/\n/g, " | "),
-                            "Jumlah Kuantitas (Unit)": parseInt(row.jumlah) || 0, "Tanggal Data": formattedWaktu,
-                            "Keterangan Rincian": (row.datapkl || '-').replace(/\n/g, " | "), "Keterangan Tambahan": (row.keterangan || '-').replace(/\n/g, " "),
+                            "No": idx + 1, 
+                            "Ref ID": row.ref_id || '-', 
+                            "Kategori Laporan": row.kategori_laporan || '-', 
+                            "Kecamatan": row.kecamatan || '-',
+                            "Kelurahan": row.kelurahan || '-', 
+                            "Lokasi / Jalan & RW": (row.lokasi || '-').replace(/\n/g, " | "),
+                            "Jumlah Kuantitas (Unit)": parseInt(row.jumlah) || 0, 
+                            "Tanggal Data": formattedWaktu,
+                            "Keterangan Rincian": (row.datapkl || '-').replace(/\n/g, " | "), 
+                            "Keterangan Tambahan": (row.keterangan || '-').replace(/\n/g, " "),
                             "Status Dokumentasi": statusDokumen
                         };
                     });
