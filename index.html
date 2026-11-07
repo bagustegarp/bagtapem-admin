@@ -301,7 +301,7 @@
                 const { data, error } = await supabaseClient
                     .from('pkl_reports')
                     .select('*')
-                    .order('waktu', { ascending: false }); // <-- DIUBAH KE 'waktu' AGAR TANGGAL KEJADIAN TERBARU MUNCUL DI ATAS
+                    .order('created_at', { ascending: false }); // <-- DIUBAH KE 'created_at' AGAR DATA YANG BARU SUBMIT MUNCUL DI ATAS
 
                 if (error) throw error;
 
