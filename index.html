@@ -301,7 +301,7 @@
                 const { data, error } = await supabaseClient
                     .from('pkl_reports')
                     .select('*')
-                    .order('created_at', { ascending: false }); // <-- DIUBAH KE 'created_at' AGAR WAKTU SUBMIT TERBARU MUNCUL DI ATAS
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
@@ -424,12 +424,19 @@
                 content.classList.add('scale-100', 'opacity-100');
             }, 10);
 
-            // Membaca URL yang dipisah koma (jika ada lebih dari 1 file)
+            // Deteksi cerdas: Gabungkan pdf_urls (multi dari 844 data) dan pdf_url (single dari form baru)
+            let urlsToDisplay = [];
             if (item.pdf_urls) {
-                const urls = item.pdf_urls.split(',');
-                urls.forEach((url, i) => {
-                    const cleanUrl = url.trim();
-                    const fileName = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
+                urlsToDisplay = item.pdf_urls.split(',').map(u => u.trim()).filter(u => u);
+            } else if (item.pdf_url) {
+                urlsToDisplay = [item.pdf_url.trim()];
+            }
+
+            // Render PDF
+            if (urlsToDisplay.length > 0) {
+                urlsToDisplay.forEach((cleanUrl, i) => {
+                    let fileName = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
+                    try { fileName = decodeURIComponent(fileName); } catch(e) {} // Rapihkan nama file jika ada karakter unik
                     
                     pdfContainer.innerHTML += `
                         <div class="flex flex-col w-full bg-white p-2 rounded-xl border border-slate-200 shadow-sm gap-2 mb-3">
@@ -508,7 +515,12 @@
                             formattedWaktu = new Date(row.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
                         }
 
-                        let statusDokumen = row.pdf_url ? `Tersedia PDF: ${row.pdf_name || 'Link PDF'}` : "Tidak Ada Dokumen";
+                        let statusDokumen = "Tidak Ada Dokumen";
+                        if (row.pdf_url) {
+                            statusDokumen = `Tersedia PDF: ${row.pdf_name || 'Link PDF'}`;
+                        } else if (row.pdf_urls) {
+                            statusDokumen = `Tersedia Multi-PDF (${row.pdf_urls.split(',').length} File)`;
+                        }
 
                         return {
                             "No": idx + 1, 
