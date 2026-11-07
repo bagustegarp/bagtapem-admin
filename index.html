@@ -3,633 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN - PKL & BANGLI</title>
-    
-    <link rel="icon" type="image/png" href="logo bagtapem.png">
+    <title>Master Admin Dashboard - BAGTAPEM</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Supabase JS SDK (v2) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- Menggunakan xlsx-js-style untuk mendukung styling warna & border pada Excel -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
-
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
-        .glass-panel { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.8); }
-        
-        .watermark-bg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; max-width: 800px; opacity: 0.15; pointer-events: none; z-index: 0; filter: grayscale(20%); }
-        
-        @keyframes blob { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
-        .animate-blob { animation: blob 8s infinite; }
-        .animation-delay-2000 { animation-delay: 2s; }
-        .animation-delay-4000 { animation-delay: 4s; }
-
-        ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f5f9; } ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-    </style>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS (xlsx) for Excel Export -->
+    <script src="https://cdn.jsdelivr.com/npm/xlsx@0.18.5/dist/xlsx.full.min.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.com/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col justify-between relative overflow-x-hidden bg-slate-50">
+<body class="bg-gray-100 font-sans min-h-screen text-slate-800">
 
-    <div class="fixed top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-        <div class="absolute -top-40 -left-10 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div class="absolute top-40 -right-20 w-96 h-96 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div class="absolute -bottom-40 left-1/3 w-[30rem] h-[30rem] bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-    </div>
-
-    <img src="logo bagtapem.png" alt="Watermark Bagtapem" class="watermark-bg" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Lambang_Kota_Bandung.svg/1200px-Lambang_Kota_Bandung.svg.png'">
-
-    <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
-
-    <div id="login-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-300">
-        <div class="glass-panel bg-white/95 p-8 rounded-3xl max-w-md w-full text-center space-y-6 shadow-2xl border border-white">
-            <div class="mx-auto flex items-center justify-center">
-                <img src="logo bagtapem.png" alt="Logo BAGTAPEM" class="h-24 w-auto object-contain drop-shadow-md" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Lambang_Kota_Bandung.svg/1200px-Lambang_Kota_Bandung.svg.png'">
+    <!-- Top Navigation Bar -->
+    <header class="bg-slate-900 text-white shadow-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-shield-halved text-2xl text-blue-500"></i>
+                <h1 class="font-bold text-lg tracking-wide uppercase">BAGTAPEM Master Dashboard</h1>
             </div>
-            <div>
-                <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Portal Master BAGTAPEM</h2>
-                <p class="text-xs text-slate-500 mt-1 font-semibold">Masukkan Passcode Operator untuk mengakses database cloud.</p>
+            <div class="flex items-center space-x-4">
+                <span class="text-xs bg-slate-800 border border-slate-700 text-blue-400 px-3 py-1.5 rounded-full font-mono flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Supabase Connected
+                </span>
             </div>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="password" id="admin-pass" placeholder="Password Admin" required class="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 text-center text-sm font-extrabold tracking-widest focus:ring-2 focus:ring-blue-800 focus:bg-white outline-none transition-all shadow-sm">
-                <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-blue-800 to-slate-900 hover:from-slate-900 hover:to-slate-950 text-white font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5">
-                    Masuk ke Dashboard
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Controls Header: Stats, Filters, Search & Actions -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                
+                <!-- Search & Status -->
+                <div class="flex-1 flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400"></i>
+                        <input type="text" id="searchInput" placeholder="Cari Ref ID, Lokasi, Kecamatan, Keterangan..." 
+                               class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                    </div>
+                    
+                    <select id="kategoriFilter" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Kategori</option>
+                        <option value="PKL">PKL</option>
+                        <option value="BANGLI">BANGLI</option>
+                        <option value="SPK">SPK</option>
+                        <option value="LAINNYA">LAINNYA</option>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center gap-3">
+                    <button id="btnRefresh" onclick="loadData()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i> Refresh
+                    </button>
+                    
+                    <button id="btnExport" onclick="exportToExcel()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-sm hover:shadow transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Export Excel (4 Sheet)
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <span>Urutan Data: <strong class="text-blue-600 font-semibold">Tanggal Kejadian Terbaru (Descending)</strong></span>
+                <span>Total Ditampilkan: <strong id="totalCount" class="text-slate-800 font-bold">0</strong> Data</span>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-50 border-b border-slate-200 text-xs uppercase font-bold text-slate-500 tracking-wider">
+                        <tr>
+                            <th class="px-6 py-4">No</th>
+                            <th class="px-6 py-4">Ref ID</th>
+                            <th class="px-6 py-4">Waktu Kejadian</th>
+                            <th class="px-6 py-4">Kategori</th>
+                            <th class="px-6 py-4">Kecamatan / Kelurahan</th>
+                            <th class="px-6 py-4">Lokasi Detail</th>
+                            <th class="px-6 py-4 text-center">Jumlah</th>
+                            <th class="px-6 py-4">Dokumen / Lap. PDF</th>
+                            <th class="px-6 py-4">Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="9" class="text-center py-12 text-slate-400">
+                                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i>
+                                <p class="text-sm">Memuat data dari Supabase...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Document Modal Preview -->
+    <div id="pdfModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-4xl h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+                <h3 id="modalTitle" class="font-bold text-sm tracking-wide flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf text-red-400 text-lg"></i> Preview Dokumen
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
-            </form>
-            
-            <p class="text-[10px] text-slate-400 font-bold tracking-widest uppercase opacity-70 mt-2">
-                @karyaanaktelkom
-            </p>
-        </div>
-    </div>
-
-    <div id="dashboard-content" class="hidden flex-col min-h-screen relative z-10">
-        <header class="glass-panel sticky top-0 z-40 shadow-sm border-b border-slate-200/80">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-20">
-                    <div class="flex items-center space-x-4">
-                        <img src="logo bagtapem.png" alt="Logo BAGTAPEM" class="h-12 w-auto object-contain drop-shadow-sm" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Lambang_Kota_Bandung.svg/1200px-Lambang_Kota_Bandung.svg.png'">
-                        <div>
-                            <h1 class="text-xl font-black text-slate-900 leading-tight tracking-tight">MASTER DASHBOARD</h1>
-                            <p class="text-xs font-bold text-blue-700 tracking-wide">REKAPITULASI DATA PKL & BANGLI</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center space-x-3">
-                        <button onclick="exportToExcel()" class="flex items-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition-all transform hover:-translate-y-0.5">
-                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                            <span class="hidden sm:inline">DOWNLOAD EXCEL</span>
-                        </button>
-                        <button onclick="logout()" class="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all shadow-sm" title="Keluar">
-                            <i data-lucide="log-out" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
             </div>
-        </header>
-
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-blue-600 flex items-center justify-between hover:shadow-md transition-all">
-                    <div>
-                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Laporan Masuk</p>
-                        <h3 class="text-3xl font-black text-slate-900" id="stat-total-laporan">0</h3>
-                    </div>
-                    <div class="p-4 bg-blue-50 text-blue-600 rounded-2xl"><i data-lucide="file-text" class="w-7 h-7"></i></div>
-                </div>
-                
-                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-amber-500 flex items-center justify-between hover:shadow-md transition-all">
-                    <div>
-                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Kuantitas Unit</p>
-                        <h3 class="text-3xl font-black text-slate-900" id="stat-total-lapak">0</h3>
-                    </div>
-                    <div class="p-4 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="layers" class="w-7 h-7"></i></div>
-                </div>
-
-                <div class="glass-panel p-6 rounded-2xl shadow-sm border-l-4 border-l-emerald-500 flex items-center justify-between hover:shadow-md transition-all">
-                    <div>
-                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Pembaruan Terakhir</p>
-                        <h3 class="text-base font-extrabold text-slate-900 mt-2" id="stat-last-update">-</h3>
-                    </div>
-                    <div class="p-4 bg-emerald-50 text-emerald-600 rounded-2xl"><i data-lucide="clock" class="w-7 h-7"></i></div>
-                </div>
+            <div class="flex-1 bg-slate-200 relative">
+                <iframe id="pdfViewer" class="w-full h-full border-0"></iframe>
             </div>
-
-            <div class="glass-panel rounded-3xl shadow-sm overflow-hidden border border-white">
-                <div class="p-6 border-b border-slate-200/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-                    <div class="flex-shrink-0">
-                        <h2 class="text-lg font-bold text-slate-900">Database Pelaporan Penertiban</h2>
-                        <p class="text-xs font-semibold text-slate-500 mt-0.5">Tersinkronisasi otomatis dari Supabase secara real-time.</p>
-                    </div>
-                    
-                    <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-                        <select id="filter-kategori" onchange="filterTable()" class="w-full sm:w-40 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-bold text-slate-700 transition-all outline-none shadow-sm cursor-pointer">
-                            <option value="">Semua Kategori</option>
-                            <option value="bangli">BANGLI</option>
-                            <option value="pkl">PKL</option>
-                            <option value="spanduk, baliho dan tali-talian">SPANDUK & BALIHO</option>
-                        </select>
-                        
-                        <select id="filter-wilayah" onchange="filterTable()" class="w-full sm:w-40 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-bold text-slate-700 transition-all outline-none shadow-sm cursor-pointer">
-                            <option value="">Semua Wilayah</option>
-                        </select>
-
-                        <div class="relative w-full sm:w-56">
-                            <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Cari Ref ID / Lokasi..." class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-semibold transition-all outline-none shadow-sm">
-                            <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse" id="data-table">
-                        <thead>
-                            <tr class="bg-slate-100/70 border-b border-slate-200 text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
-                                <th class="px-6 py-4">Ref ID</th>
-                                <th class="px-6 py-4">Kategori</th>
-                                <th class="px-6 py-4">Tanggal Data</th>
-                                <th class="px-6 py-4">Wilayah</th>
-                                <th class="px-6 py-4">Lokasi & Kuantitas</th>
-                                <th class="px-6 py-4 text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body" class="divide-y divide-slate-100 text-sm font-medium"></tbody>
-                    </table>
-                </div>
-                
-                <div id="empty-state" class="hidden flex-col items-center justify-center py-16 text-center">
-                    <div class="bg-slate-100 p-4 rounded-full text-slate-400 mb-3"><i data-lucide="inbox" class="w-8 h-8"></i></div>
-                    <h4 class="text-base font-bold text-slate-800">Tidak Ada Data Ditemukan</h4>
-                    <p class="text-xs text-slate-500 mt-1 max-w-sm">Data belum masuk atau tidak ada hasil dari pencarian / filter Anda.</p>
-                </div>
-            </div>
-        </main>
-
-        <footer class="bg-white/90 backdrop-blur-md mt-12 py-6 border-t border-slate-200 relative z-20">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="flex items-center space-x-3 text-left">
-                    <img src="logo bagtapem.png" alt="Logo BAGTAPEM" class="h-10 w-auto object-contain" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Lambang_Kota_Bandung.svg/1200px-Lambang_Kota_Bandung.svg.png'">
-                    <div>
-                        <p class="font-extrabold text-sm text-slate-800">Bagian Tata Pemerintahan (BAGTAPEM)</p>
-                        <p class="text-[11px] text-slate-500 font-semibold tracking-wide">Sekretariat Daerah Kota Bandung &copy; 2026</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-2 bg-slate-50 px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-xs font-bold text-slate-600">Bgs@karyaanaktelkom.V3.0 Supabase</span>
-                </div>
-            </div>
-        </footer>
-    </div>
-
-    <div id="admin-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 pointer-events-none">
-        <div id="modal-content" class="glass-panel bg-white/95 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto transform scale-95 transition-all duration-300 opacity-0 border border-white">
-            <button onclick="closeAdminModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 rounded-full hover:bg-slate-100 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
-            
-            <div class="flex items-center space-x-3 pb-4 border-b border-slate-200">
-                <div class="bg-blue-100 p-3 rounded-2xl text-blue-800"><i data-lucide="file-search" class="w-6 h-6"></i></div>
-                <div>
-                    <h2 class="text-lg font-bold text-slate-900">Detail Pelaporan</h2>
-                    <div class="flex items-center gap-2 mt-1">
-                        <p class="text-xs font-mono font-extrabold text-blue-800" id="detail-id">REF: -</p>
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider bg-slate-200 text-slate-700" id="detail-kategori">-</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-2">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">File Dokumen Lapangan</span>
-                    <div id="detail-pdf-container" class="w-full h-56 bg-slate-100 rounded-2xl overflow-y-auto border border-slate-200 shadow-inner p-3 flex flex-col gap-2 relative">
-                    </div>
-                </div>
-                
-                <div class="space-y-3 text-xs sm:text-sm">
-                    <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Kecamatan / Kelurahan</span><p class="font-extrabold text-slate-900 text-base"><span id="detail-kec"></span> / <span id="detail-kel"></span></p></div>
-                    <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Lokasi & RW</span><p class="font-bold text-slate-800 whitespace-pre-wrap bg-slate-50 p-2.5 rounded-xl border border-slate-200" id="detail-lokasi"></p></div>
-                    <div class="flex items-center justify-between bg-blue-50/80 p-3 rounded-xl border border-blue-100"><span class="text-xs font-bold text-blue-900">Total Kuantitas:</span><span class="font-black text-blue-800 text-lg" id="detail-jumlah">0 Unit</span></div>
-                    <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Tanggal Pelaksanaan</span><p class="font-bold text-slate-800" id="detail-waktu"></p></div>
-                </div>
-            </div>
-
-            <div class="space-y-3 pt-3 border-t border-slate-100">
-                <div>
-                    <span class="text-xs font-bold text-slate-500 uppercase block mb-1.5">Keterangan Rincian</span>
-                    <p class="p-3 bg-slate-50 rounded-xl text-slate-900 font-bold text-xs border border-slate-200 whitespace-pre-wrap leading-relaxed shadow-sm" id="detail-datapkl"></p>
-                </div>
-                <div>
-                    <span class="text-xs font-bold text-slate-500 uppercase block mb-1.5">Keterangan Tambahan</span>
-                    <p class="p-3 bg-slate-50/60 rounded-xl text-slate-700 italic text-xs border border-slate-200" id="detail-keterangan"></p>
-                </div>
-            </div>
-
-            <div class="pt-4 flex justify-end border-t border-slate-100">
-                <button onclick="closeAdminModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all shadow-md">Tutup Detail</button>
+            <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+                <button onclick="closeModal()" class="px-5 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold">Tutup</button>
             </div>
         </div>
     </div>
 
+    <!-- Application Script -->
     <script>
-        const SUPABASE_URL = "https://iidsvuqubbxphzdjoyhk.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_zopMWE46HXr9jxWSmshe9A_XWgXqQ7K";
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Supabase Initialization
+        const SUPABASE_URL = 'https://jtsytedrrtknhdfhksdr.supabase.co'; // Sesuaikan URL Supabase kamu
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Sesuaikan Anon/Public Key Supabase kamu
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let pklData = [];
-        let currentFilteredData = []; 
+        let globalReportsData = [];
 
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            const wilayahSelect = document.getElementById('filter-wilayah');
-            const kecamatanList = [
-                "Andir", "Antapani", "Arcamanik", "Astana Anyar", "Babakan Ciparay",
-                "Bandung Kidul", "Bandung Kulon", "Bandung Wetan", "Batununggal", "Bojongloa Kaler",
-                "Bojongloa Kidul", "Buahbatu", "Cibeunying Kaler", "Cibeunying Kidul", "Cibiru",
-                "Cicendo", "Cidadap", "Cinambo", "Coblong", "Gedebage",
-                "Kiaracondong", "Lengkong", "Mandalajati", "Panyileukan", "Rancasari",
-                "Regol", "Sukajadi", "Sukasari", "Sumur Bandung", "Ujungberung"
-            ];
-            
-            kecamatanList.sort().forEach(kec => {
-                const opt = document.createElement('option');
-                opt.value = kec.toLowerCase();
-                opt.textContent = kec;
-                wilayahSelect.appendChild(opt);
-            });
-        });
+        // Fetch Data from Supabase
+        async function loadData() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-12 text-slate-400">
+                        <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i>
+                        <p class="text-sm">Memuat data dari Supabase...</p>
+                    </td>
+                </tr>`;
 
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            let bgClass, iconName;
-            if (type === 'success') { bgClass = 'bg-emerald-600'; iconName = 'check-circle'; }
-            else if (type === 'error') { bgClass = 'bg-red-600'; iconName = 'alert-octagon'; }
-            else { bgClass = 'bg-blue-600'; iconName = 'info'; }
-
-            toast.className = `${bgClass} text-white px-5 py-3.5 rounded-xl shadow-xl transform transition-all duration-500 translate-x-[120%] flex items-center gap-3 pointer-events-auto max-w-sm`;
-            toast.innerHTML = `<i data-lucide="${iconName}" class="w-5 h-5 shrink-0"></i> <span class="text-sm font-semibold">${message}</span>`;
-            
-            container.appendChild(toast);
-            lucide.createIcons({root: toast});
-            
-            setTimeout(() => { toast.classList.remove('translate-x-[120%]'); }, 50);
-            setTimeout(() => { toast.classList.add('translate-x-[120%]'); setTimeout(() => toast.remove(), 500); }, 3500);
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const pass = document.getElementById('admin-pass').value;
-            if (pass === 'admin123') { 
-                document.getElementById('login-overlay').classList.add('opacity-0', 'pointer-events-none');
-                setTimeout(() => {
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    document.getElementById('dashboard-content').classList.remove('hidden');
-                    document.getElementById('dashboard-content').classList.add('flex');
-                    loadSupabaseData();
-                    showToast("Selamat Datang di Master Dashboard Admin", "success");
-                }, 300);
-            } else {
-                showToast("Password Admin Salah!", "error");
-            }
-        }
-
-        function logout() { location.reload(); }
-
-        async function loadSupabaseData() {
             try {
-                const { data, error } = await supabaseClient
+                // DI SINI PERUBAHAN UTAMANYA: Data diurutkan berdasarkan tanggal kejadian ('waktu') terbaru di paling atas
+                const { data, error } = await supabase
                     .from('pkl_reports')
                     .select('*')
-                    .order('created_at', { ascending: false });
+                    .order('waktu', { ascending: false }); // <-- Tanggal Kejadian Terbaru di Atas
 
                 if (error) throw error;
 
-                pklData = data || [];
-                filterTable();
-
-                // Subscribe Realtime ke Supabase PostgreSQL
-                supabaseClient
-                    .channel('public:pkl_reports')
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'pkl_reports' }, () => {
-                        loadSupabaseData();
-                    })
-                    .subscribe();
-
+                globalReportsData = data || [];
+                renderTable(globalReportsData);
             } catch (err) {
-                console.error(err);
-                showToast("Gagal memuat data: " + err.message, "error");
+                console.error('Error fetching data:', err);
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-8 text-red-500 font-semibold">
+                            <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i><br>
+                            Gagal mengambil data dari database Supabase!
+                        </td>
+                    </tr>`;
             }
         }
 
+        // Render Data Table
+        function renderTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            document.getElementById('totalCount').innerText = data.length;
+
+            if (data.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-8 text-slate-400">Tidak ada data ditemukan.</td>
+                    </tr>`;
+                return;
+            }
+
+            let html = '';
+            data.forEach((item, index) => {
+                const refIdDisplay = item.ref_id || item.id || '-';
+                const tanggalKejadian = item.waktu ? new Date(item.waktu).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+                
+                // Document Button/Link Preview
+                let docBtn = '<span class="text-slate-400 italic text-xs">Tidak Ada</span>';
+                if (item.pdf_url) {
+                    docBtn = `<button onclick="openModal('${item.pdf_url}', '${item.pdf_name || 'Dokumen PDF'}')" 
+                                      class="inline-flex items-center gap-1.5 px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-md text-xs font-semibold transition-all">
+                                <i class="fa-solid fa-file-pdf"></i> ${item.pdf_name || 'Lihat PDF'}
+                              </button>`;
+                }
+
+                html += `
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="px-6 py-4 font-semibold text-slate-400 text-xs">${index + 1}</td>
+                        <td class="px-6 py-4">
+                            <span class="font-mono font-extrabold text-[11px] text-blue-900 bg-blue-100/80 px-2.5 py-1 rounded-md border border-blue-200">
+                                ${refIdDisplay}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 font-semibold text-slate-700">${tanggalKejadian}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 uppercase">
+                                ${item.kategori_laporan || '-'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-800">${item.kecamatan || '-'}</div>
+                            <div class="text-xs text-slate-500">${item.kelurahan || '-'}</div>
+                        </td>
+                        <td class="px-6 py-4 max-w-xs truncate text-slate-600" title="${item.lokasi || ''}">
+                            ${item.lokasi || '-'}
+                        </td>
+                        <td class="px-6 py-4 text-center font-bold text-slate-800">${item.jumlah || 0}</td>
+                        <td class="px-6 py-4">${docBtn}</td>
+                        <td class="px-6 py-4 max-w-xs truncate text-xs text-slate-500" title="${item.keterangan || ''}">
+                            ${item.keterangan || '-'}
+                        </td>
+                    </tr>`;
+            });
+
+            tableBody.innerHTML = html;
+        }
+
+        // Search & Filter Listeners
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+        document.getElementById('kategoriFilter').addEventListener('change', filterTable);
+
         function filterTable() {
-            const query = document.getElementById('search-input').value.toLowerCase();
-            const filterKat = document.getElementById('filter-kategori').value.toLowerCase();
-            const filterWil = document.getElementById('filter-wilayah').value.toLowerCase();
-            
-            currentFilteredData = pklData.filter(item => {
-                const ref = (item.ref_id || '').toLowerCase();
-                const kat = (item.kategori_laporan || '').toLowerCase();
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const selectedKategori = document.getElementById('kategoriFilter').value.toUpperCase();
+
+            const filtered = globalReportsData.filter(item => {
+                const ref = (item.ref_id || item.id || '').toLowerCase();
                 const kec = (item.kecamatan || '').toLowerCase();
                 const kel = (item.kelurahan || '').toLowerCase();
                 const lok = (item.lokasi || '').toLowerCase();
-                
-                const matchSearch = ref.includes(query) || kel.includes(query) || lok.includes(query) || kec.includes(query);
-                const matchKat = (filterKat === "" || kat === filterKat);
-                const matchWil = (filterWil === "" || kec === filterWil);
-                
-                return matchSearch && matchKat && matchWil;
+                const ket = (item.keterangan || '').toLowerCase();
+                const kat = (item.kategori_laporan || '').toUpperCase();
+
+                const matchQuery = ref.includes(query) || kec.includes(query) || kel.includes(query) || lok.includes(query) || ket.includes(query);
+                const matchKategori = selectedKategori === '' || kat === selectedKategori;
+
+                return matchQuery && matchKategori;
             });
-            
-            renderTable(currentFilteredData);
-            updateStats(currentFilteredData);
+
+            renderTable(filtered);
         }
 
-        function renderTable(data) {
-            const tbody = document.getElementById('table-body');
-            const emptyState = document.getElementById('empty-state');
-            const tableEl = document.getElementById('data-table');
-            tbody.innerHTML = '';
-
-            if (data.length === 0) {
-                emptyState.classList.remove('hidden'); emptyState.classList.add('flex');
-                tableEl.classList.add('hidden'); return;
-            }
-
-            emptyState.classList.add('hidden'); emptyState.classList.remove('flex');
-            tableEl.classList.remove('hidden');
-
-            data.forEach((item, index) => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-blue-50/60 transition-colors group';
-                
-                let formattedWaktu = '-';
-                if(item.waktu) {
-                    formattedWaktu = new Date(item.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                }
-
-                tr.innerHTML = `
-                    <td class="px-6 py-4"><span class="font-mono font-extrabold text-[11px] text-blue-900 bg-blue-100/80 px-2.5 py-1 rounded-md border border-blue-200">${item.ref_id || '-'}</span></td>
-                    <td class="px-6 py-4"><span class="font-bold text-[10px] text-slate-700 bg-slate-200/70 px-2 py-1 rounded-md uppercase tracking-wider border border-slate-300">${item.kategori_laporan || 'TIDAK ADA'}</span></td>
-                    <td class="px-6 py-4"><span class="text-slate-700 font-bold text-xs">${formattedWaktu}</span></td>
-                    <td class="px-6 py-4"><p class="font-extrabold text-slate-900 text-xs">${item.kecamatan || '-'}</p><p class="text-[11px] text-slate-500 font-semibold">${item.kelurahan || '-'}</p></td>
-                    <td class="px-6 py-4"><p class="font-bold text-slate-800 truncate max-w-[200px] text-xs">${item.lokasi || '-'}</p><p class="text-[11px] font-black text-amber-600 mt-0.5">${item.jumlah || 0} Unit</p></td>
-                    <td class="px-6 py-4 text-center">
-                        <div class="flex items-center justify-center space-x-2">
-                            <button onclick="viewDetail(${index})" class="p-2 bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg transition-all" title="Lihat Detail"><i data-lucide="eye" class="w-4 h-4"></i></button>
-                            <button onclick="deleteCloudRow('${item.id}')" class="p-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-            lucide.createIcons();
+        // Modal Functions
+        function openModal(url, filename) {
+            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-file-pdf text-red-400 text-lg"></i> ${filename}`;
+            document.getElementById('pdfViewer').src = url;
+            document.getElementById('pdfModal').classList.remove('hidden');
         }
 
-        function updateStats(data) {
-            document.getElementById('stat-total-laporan').innerText = data.length;
-            const totalLapak = data.reduce((sum, item) => sum + (parseInt(item.jumlah) || 0), 0);
-            document.getElementById('stat-total-lapak').innerText = totalLapak;
-            
-            if (data.length > 0 && data[0].waktu) {
-                document.getElementById('stat-last-update').innerText = new Date(data[0].waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-            } else { 
-                document.getElementById('stat-last-update').innerText = '-'; 
-            }
+        function closeModal() {
+            document.getElementById('pdfViewer').src = '';
+            document.getElementById('pdfModal').classList.add('hidden');
         }
 
-        // --- SISTEM PELACAK PDF PINTAR BARU (MULTIPLE PDF) ---
-        async function viewDetail(index) {
-            const item = currentFilteredData[index];
-            document.getElementById('detail-id').innerText = `REF: ${item.ref_id || '-'}`;
-            document.getElementById('detail-kategori').innerText = item.kategori_laporan || 'KATEGORI TIDAK TERSEDIA';
-            document.getElementById('detail-kec').innerText = item.kecamatan || '-';
-            document.getElementById('detail-kel').innerText = item.kelurahan || '-';
-            document.getElementById('detail-lokasi').innerText = item.lokasi || '-';
-            document.getElementById('detail-jumlah').innerText = `${item.jumlah || 0} Unit`;
-            document.getElementById('detail-waktu').innerText = item.waktu ? new Date(item.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
-            document.getElementById('detail-datapkl').innerText = item.datapkl || '-';
-            document.getElementById('detail-keterangan').innerText = item.keterangan || '-';
-            
-            const pdfContainer = document.getElementById('detail-pdf-container');
-            // Tampilkan animasi loading saat modal terbuka
-            pdfContainer.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full gap-3 py-6">
-                    <span class="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></span>
-                    <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Melacak PDF di Cloud...</p>
-                </div>
-            `;
-
-            // Buka modal secara instan
-            const modal = document.getElementById('admin-modal');
-            const content = document.getElementById('modal-content');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0', 'pointer-events-none');
-                content.classList.remove('scale-95', 'opacity-0');
-                content.classList.add('scale-100', 'opacity-100');
-            }, 10);
-
-            let pdfs = [];
-
-            if (item.pdf_url) {
-                try {
-                    let parsedUrls = JSON.parse(item.pdf_url);
-                    let parsedNames = item.pdf_name ? JSON.parse(item.pdf_name) : [];
-                    if (Array.isArray(parsedUrls)) {
-                        pdfs = parsedUrls.map((url, i) => ({
-                            url: url,
-                            name: parsedNames[i] || `Dokumen_${i+1}.pdf`
-                        }));
-                    } else {
-                        pdfs.push({ url: item.pdf_url, name: item.pdf_name || 'Dokumen_Laporan_PDF.pdf' });
-                    }
-                } catch(e) {
-                    if (item.pdf_url.includes(',')) {
-                        let urls = item.pdf_url.split(',');
-                        let names = item.pdf_name ? item.pdf_name.split(',') : [];
-                        pdfs = urls.map((url, i) => ({
-                            url: url.trim(),
-                            name: names[i] ? names[i].trim() : `Dokumen_${i+1}.pdf`
-                        }));
-                    } else {
-                         pdfs.push({ url: item.pdf_url, name: item.pdf_name || 'Dokumen_Laporan_PDF.pdf' });
-                    }
-                }
-            }
-
-            if (pdfs.length === 0) {
-                try {
-                    const { data: fileList, error } = await supabaseClient.storage.from('dokumentasi').list();
-                    if (fileList) {
-                        const foundFiles = fileList.filter(f => (item.id && f.name.includes(item.id)) || (item.ref_id && f.name.includes(item.ref_id)));
-                        for (let f of foundFiles) {
-                            const { data: urlData } = supabaseClient.storage.from('dokumentasi').getPublicUrl(f.name);
-                            pdfs.push({
-                                url: urlData.publicUrl,
-                                name: f.name
-                            });
-                        }
-                    }
-                } catch (e) {
-                    console.error("Gagal melacak PDF:", e);
-                }
-            }
-
-            if (pdfs.length > 0) {
-                let htmlContent = '';
-                pdfs.forEach(pdf => {
-                    htmlContent += `
-                        <div class="mb-4 last:mb-0 w-full">
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm gap-3">
-                                <div class="flex items-center gap-3 overflow-hidden w-full">
-                                    <div class="bg-emerald-50 p-2 rounded-lg text-emerald-600 shrink-0">
-                                        <i data-lucide="file-text" class="w-4 h-4"></i>
-                                    </div>
-                                    <span class="text-[11px] font-bold text-slate-700 truncate w-full" title="${pdf.name}">${pdf.name}</span>
-                                </div>
-                                <div class="flex items-center gap-2 shrink-0">
-                                    <a href="${pdf.url}" target="_blank" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-lg text-[10px] font-bold transition-colors shadow-sm flex items-center gap-1">
-                                        <i data-lucide="eye" class="w-3 h-3"></i> Lihat PDF
-                                    </a>
-                                </div>
-                            </div>
-                            <iframe src="${pdf.url}" class="w-full h-40 rounded-xl border border-slate-200 shadow-sm mt-2"></iframe>
-                        </div>
-                    `;
-                });
-                pdfContainer.innerHTML = htmlContent;
-            } else {
-                pdfContainer.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-full text-slate-400 py-6">
-                        <i data-lucide="file-x-2" class="w-10 h-10 mb-2 opacity-30"></i>
-                        <p class="text-[11px] font-bold">Tidak ada dokumen lampiran PDF.</p>
-                    </div>
-                `;
-            }
-
-            lucide.createIcons();
-        }
-
-        function closeAdminModal() { 
-            const modal = document.getElementById('admin-modal');
-            const content = document.getElementById('modal-content');
-            
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            content.classList.remove('scale-100', 'opacity-100');
-            content.classList.add('scale-95', 'opacity-0');
-            
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
-
-        async function deleteCloudRow(id) {
-            if(confirm("Apakah Anda yakin ingin menghapus data ini dari cloud secara permanen?")) {
-                try {
-                    const { error } = await supabaseClient.from('pkl_reports').delete().eq('id', id);
-                    if (error) throw error;
-                    showToast("Data berhasil dihapus dari Supabase", "success");
-                    loadSupabaseData();
-                } catch (err) {
-                    showToast("Gagal menghapus: " + err.message, "error");
-                }
-            }
-        }
-
+        // Multi-Sheet Excel Export Functionality
         function exportToExcel() {
-            if (currentFilteredData.length === 0) { showToast("Tidak ada data untuk di-export.", "error"); return; }
-            
-            showToast("Sedang memproses dokumen Excel...", "info");
-            const workbook = XLSX.utils.book_new();
+            if (globalReportsData.length === 0) {
+                alert('Tidak ada data yang dapat diekspor!');
+                return;
+            }
 
-            const buildSheet = (dataArray, sheetName) => {
-                let excelRows = [];
+            const wb = XLSX.utils.book_new();
+            const categories = ['PKL', 'BANGLI', 'SPK', 'LAINNYA'];
 
-                if (dataArray.length === 0) {
-                    excelRows = [{
-                        "No": "-", "Ref ID": "Tidak ada laporan pada kategori ini", "Kategori Laporan": "-", "Kecamatan": "-",
-                        "Kelurahan": "-", "Lokasi / Jalan & RW": "-", "Jumlah Kuantitas (Unit)": "-", "Tanggal Data": "-",
-                        "Keterangan Rincian": "-", "Keterangan Tambahan": "-", "Status Dokumentasi": "-"
-                    }];
-                } else {
-                    const sortedData = [...dataArray].sort((a, b) => {
-                        const kecA = (a.kecamatan || '').toLowerCase();
-                        const kecB = (b.kecamatan || '').toLowerCase();
-                        return kecA.localeCompare(kecB);
-                    });
-                    
-                    excelRows = sortedData.map((row, idx) => {
-                        let formattedWaktu = '-';
-                        if(row.waktu) {
-                            formattedWaktu = new Date(row.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                        }
+            categories.forEach(cat => {
+                const filteredCat = globalReportsData.filter(item => (item.kategori_laporan || '').toUpperCase() === cat);
+                const sheetData = filteredCat.map((item, idx) => ({
+                    'No': idx + 1,
+                    'Ref ID': item.ref_id || item.id || '-',
+                    'Waktu Kejadian': item.waktu || '-',
+                    'Kategori': item.kategori_laporan || '-',
+                    'Kecamatan': item.kecamatan || '-',
+                    'Kelurahan': item.kelurahan || '-',
+                    'Lokasi Detail': item.lokasi || '-',
+                    'Jumlah': item.jumlah || 0,
+                    'Data PKL / Objek': item.datapkl || '-',
+                    'Keterangan': item.keterangan || '-',
+                    'URL PDF': item.pdf_url || '-'
+                }));
 
-                        let statusDokumen = row.pdf_url ? `Tersedia PDF: ${row.pdf_name || 'Link PDF'}` : "Tidak Ada Dokumen";
+                const ws = XLSX.utils.json_to_array ? XLSX.utils.json_to_sheet(sheetData) : XLSX.utils.json_to_sheet(sheetData);
+                XLSX.utils.book_append_sheet(wb, ws, cat);
+            });
 
-                        return {
-                            "No": idx + 1, 
-                            "Ref ID": row.ref_id || '-', 
-                            "Kategori Laporan": row.kategori_laporan || '-', 
-                            "Kecamatan": row.kecamatan || '-',
-                            "Kelurahan": row.kelurahan || '-', 
-                            "Lokasi / Jalan & RW": (row.lokasi || '-').replace(/\n/g, " | "),
-                            "Jumlah Kuantitas (Unit)": parseInt(row.jumlah) || 0, 
-                            "Tanggal Data": formattedWaktu,
-                            "Keterangan Rincian": (row.datapkl || '-').replace(/\n/g, " | "), 
-                            "Keterangan Tambahan": (row.keterangan || '-').replace(/\n/g, " "),
-                            "Status Dokumentasi": statusDokumen
-                        };
-                    });
-                }
-
-                const worksheet = XLSX.utils.json_to_sheet(excelRows);
-                worksheet['!cols'] = [
-                    { wch: 5 }, { wch: 25 }, { wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 40 },
-                    { wch: 22 }, { wch: 20 }, { wch: 45 }, { wch: 35 }, { wch: 50 }
-                ];
-
-                const range = XLSX.utils.decode_range(worksheet['!ref']);
-                for (let R = range.s.r; R <= range.e.r; ++R) {
-                    for (let C = range.s.c; C <= range.e.c; ++C) {
-                        const address = XLSX.utils.encode_cell({ r: R, c: C });
-                        if (!worksheet[address]) continue;
-                        
-                        if (R === 0) {
-                            worksheet[address].s = {
-                                fill: { fgColor: { rgb: "1E3A8A" } },
-                                font: { color: { rgb: "FFFFFF" }, bold: true, name: "Arial" },
-                                alignment: { horizontal: "center", vertical: "center", wrapText: true },
-                                border: { top: { style: "medium", color: { rgb: "000000" } }, bottom: { style: "medium", color: { rgb: "000000" } }, left: { style: "thin", color: { rgb: "000000" } }, right: { style: "thin", color: { rgb: "000000" } } }
-                            };
-                        } else {
-                            worksheet[address].s = {
-                                alignment: { vertical: "top", wrapText: true },
-                                border: { top: { style: "thin", color: { rgb: "CCCCCC" } }, bottom: { style: "thin", color: { rgb: "CCCCCC" } }, left: { style: "thin", color: { rgb: "CCCCCC" } }, right: { style: "thin", color: { rgb: "CCCCCC" } } }
-                            };
-                            if (C === 0 || C === 1 || C === 2 || C === 6 || C === 7) {
-                                worksheet[address].s.alignment.horizontal = "center";
-                            }
-                        }
-                    }
-                }
-                XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-            };
-
-            const dataBangli = currentFilteredData.filter(d => (d.kategori_laporan || '').toLowerCase() === 'bangli');
-            const dataPkl = currentFilteredData.filter(d => (d.kategori_laporan || '').toLowerCase() === 'pkl');
-            const dataSpanduk = currentFilteredData.filter(d => (d.kategori_laporan || '').toLowerCase().includes('spanduk'));
-
-            buildSheet(currentFilteredData, "Semua Data");
-            buildSheet(dataBangli, "Data BANGLI");
-            buildSheet(dataPkl, "Data PKL");
-            buildSheet(dataSpanduk, "Data SPANDUK");
-
-            const fileName = `Rekap_Pendataan_BAGTAPEM_${new Date().toISOString().split('T')[0]}.xlsx`;
-            XLSX.writeFile(workbook, fileName);
-
-            setTimeout(() => {
-                showToast("Berhasil terunduh dengan Format Multi-Sheet!", "success");
-            }, 500);
+            XLSX.writeFile(wb, `Laporan_BAGTAPEM_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
 </html>
