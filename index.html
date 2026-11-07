@@ -136,7 +136,7 @@
                         </select>
 
                         <div class="relative w-full sm:w-56">
-                            <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Cari Ref ID / Lokasi..." class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-semibold transition-all outline-none shadow-sm">
+                            <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Cari Ref ID / Lokasi / RT RW..." class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-semibold transition-all outline-none shadow-sm">
                             <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
                         </div>
                     </div>
@@ -150,7 +150,8 @@
                                 <th class="px-6 py-4">Kategori</th>
                                 <th class="px-6 py-4">Tanggal Data</th>
                                 <th class="px-6 py-4">Wilayah</th>
-                                <th class="px-6 py-4">Lokasi & Kuantitas</th>
+                                <th class="px-6 py-4">Lokasi & RT/RW</th>
+                                <th class="px-6 py-4">Kuantitas</th>
                                 <th class="px-6 py-4 text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -207,8 +208,9 @@
                 
                 <div class="space-y-3 text-xs sm:text-sm">
                     <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Kecamatan / Kelurahan</span><p class="font-extrabold text-slate-900 text-base"><span id="detail-kec"></span> / <span id="detail-kel"></span></p></div>
-                    <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Lokasi & RW</span><p class="font-bold text-slate-800 whitespace-pre-wrap bg-slate-50 p-2.5 rounded-xl border border-slate-200" id="detail-lokasi"></p></div>
-                    <div class="flex items-center justify-between bg-blue-50/80 p-3 rounded-xl border border-blue-100"><span class="text-xs font-bold text-blue-900">Total Kuantitas:</span><span class="font-black text-blue-800 text-lg" id="detail-jumlah">0 Unit</span></div>
+                    <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Lokasi Detail</span><p class="font-bold text-slate-800 whitespace-pre-wrap bg-slate-50 p-2.5 rounded-xl border border-slate-200" id="detail-lokasi"></p></div>
+                    <div><span class="text-[11px] font-bold text-slate-400 uppercase block">RT / RW</span><p class="font-bold text-blue-800 bg-blue-50/80 p-2 rounded-lg border border-blue-100 inline-block text-xs mt-0.5" id="detail-rtrw"></p></div>
+                    <div class="flex items-center justify-between bg-emerald-50/80 p-3 rounded-xl border border-emerald-100"><span class="text-xs font-bold text-emerald-900">Total Kuantitas:</span><span class="font-black text-emerald-800 text-lg" id="detail-jumlah">0 Unit</span></div>
                     <div><span class="text-[11px] font-bold text-slate-400 uppercase block">Tanggal Pelaksanaan</span><p class="font-bold text-slate-800" id="detail-waktu"></p></div>
                 </div>
             </div>
@@ -301,7 +303,7 @@
                 const { data, error } = await supabaseClient
                     .from('pkl_reports')
                     .select('*')
-                    .order('waktu', { ascending: false }); // <-- DIUBAH KE 'waktu' AGAR TANGGAL KEJADIAN TERBARU MUNCUL DI ATAS
+                    .order('waktu', { ascending: false });
 
                 if (error) throw error;
 
@@ -333,8 +335,9 @@
                 const kec = (item.kecamatan || '').toLowerCase();
                 const kel = (item.kelurahan || '').toLowerCase();
                 const lok = (item.lokasi || '').toLowerCase();
+                const rtrw = (item.rtrw || '').toLowerCase();
                 
-                const matchSearch = ref.includes(query) || kel.includes(query) || lok.includes(query) || kec.includes(query);
+                const matchSearch = ref.includes(query) || kel.includes(query) || lok.includes(query) || kec.includes(query) || rtrw.includes(query);
                 const matchKat = (filterKat === "" || kat === filterKat);
                 const matchWil = (filterWil === "" || kec === filterWil);
                 
@@ -373,7 +376,11 @@
                     <td class="px-6 py-4"><span class="font-bold text-[10px] text-slate-700 bg-slate-200/70 px-2 py-1 rounded-md uppercase tracking-wider border border-slate-300">${item.kategori_laporan || 'TIDAK ADA'}</span></td>
                     <td class="px-6 py-4"><span class="text-slate-700 font-bold text-xs">${formattedWaktu}</span></td>
                     <td class="px-6 py-4"><p class="font-extrabold text-slate-900 text-xs">${item.kecamatan || '-'}</p><p class="text-[11px] text-slate-500 font-semibold">${item.kelurahan || '-'}</p></td>
-                    <td class="px-6 py-4"><p class="font-bold text-slate-800 truncate max-w-[200px] text-xs">${item.lokasi || '-'}</p><p class="text-[11px] font-black text-amber-600 mt-0.5">${item.jumlah || 0} Unit</p></td>
+                    <td class="px-6 py-4">
+                        <p class="font-bold text-slate-800 truncate max-w-[200px] text-xs">${item.lokasi || '-'}</p>
+                        <p class="text-[11px] font-extrabold text-blue-700 mt-0.5"><i data-lucide="map-pin" class="w-3 h-3 inline mr-0.5"></i>${item.rtrw || '-'}</p>
+                    </td>
+                    <td class="px-6 py-4"><span class="text-xs font-black text-amber-600">${item.jumlah || 0} Unit</span></td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center space-x-2">
                             <button onclick="viewDetail(${index})" class="p-2 bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg transition-all" title="Lihat Detail"><i data-lucide="eye" class="w-4 h-4"></i></button>
@@ -406,6 +413,7 @@
             document.getElementById('detail-kec').innerText = item.kecamatan || '-';
             document.getElementById('detail-kel').innerText = item.kelurahan || '-';
             document.getElementById('detail-lokasi').innerText = item.lokasi || '-';
+            document.getElementById('detail-rtrw').innerText = item.rtrw || '-';
             document.getElementById('detail-jumlah').innerText = `${item.jumlah || 0} Unit`;
             document.getElementById('detail-waktu').innerText = item.waktu ? new Date(item.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
             document.getElementById('detail-datapkl').innerText = item.datapkl || '-';
@@ -516,7 +524,7 @@
                 if (dataArray.length === 0) {
                     excelRows = [{
                         "No": "-", "Ref ID": "Tidak ada laporan pada kategori ini", "Kategori Laporan": "-", "Kecamatan": "-",
-                        "Kelurahan": "-", "Lokasi / Jalan & RW": "-", "Jumlah Kuantitas (Unit)": "-", "Tanggal Data": "-",
+                        "Kelurahan": "-", "Lokasi / Jalan": "-", "RT/RW": "-", "Jumlah Kuantitas (Unit)": "-", "Tanggal Data": "-",
                         "Keterangan Rincian": "-", "Keterangan Tambahan": "-", "Status Dokumentasi": "-"
                     }];
                 } else {
@@ -540,7 +548,8 @@
                             "Kategori Laporan": row.kategori_laporan || '-', 
                             "Kecamatan": row.kecamatan || '-',
                             "Kelurahan": row.kelurahan || '-', 
-                            "Lokasi / Jalan & RW": (row.lokasi || '-').replace(/\n/g, " | "),
+                            "Lokasi / Jalan": (row.lokasi || '-').replace(/\n/g, " | "),
+                            "RT/RW": row.rtrw || '-',
                             "Jumlah Kuantitas (Unit)": parseInt(row.jumlah) || 0, 
                             "Tanggal Data": formattedWaktu,
                             "Keterangan Rincian": (row.datapkl || '-').replace(/\n/g, " | "), 
@@ -552,7 +561,7 @@
 
                 const worksheet = XLSX.utils.json_to_sheet(excelRows);
                 worksheet['!cols'] = [
-                    { wch: 5 }, { wch: 25 }, { wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 40 },
+                    { wch: 5 }, { wch: 25 }, { wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 35 }, { wch: 20 },
                     { wch: 22 }, { wch: 20 }, { wch: 45 }, { wch: 35 }, { wch: 50 }
                 ];
 
