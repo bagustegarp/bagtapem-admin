@@ -287,6 +287,7 @@
                     document.getElementById('dashboard-content').classList.remove('hidden');
                     document.getElementById('dashboard-content').classList.add('flex');
                     loadSupabaseData();
+                    setupRealtime(); // Menjalankan fungsi realtime SATU KALI saat berhasil login
                     showToast("Selamat Datang di Master Dashboard Admin", "success");
                 }, 300);
             } else {
@@ -296,6 +297,7 @@
 
         function logout() { location.reload(); }
 
+        // Fungsi Load Data HANYA menarik data, tidak lagi membuat channel realtime baru
         async function loadSupabaseData() {
             try {
                 const { data, error } = await supabaseClient
@@ -308,18 +310,21 @@
                 pklData = data || [];
                 filterTable();
 
-                // Subscribe Realtime ke Supabase PostgreSQL
-                supabaseClient
-                    .channel('public:pkl_reports')
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'pkl_reports' }, () => {
-                        loadSupabaseData();
-                    })
-                    .subscribe();
-
             } catch (err) {
                 console.error(err);
                 showToast("Gagal memuat data: " + err.message, "error");
             }
+        }
+
+        // Fungsi terpisah khusus menangani Realtime (Live Update)
+        function setupRealtime() {
+            supabaseClient
+                .channel('custom-update-channel')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'pkl_reports' }, (payload) => {
+                    // Ketika ada yang input baru atau dihapus, otomatis tarik data terbaru
+                    loadSupabaseData();
+                })
+                .subscribe();
         }
 
         function filterTable() {
