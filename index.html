@@ -287,7 +287,7 @@
                     document.getElementById('dashboard-content').classList.remove('hidden');
                     document.getElementById('dashboard-content').classList.add('flex');
                     loadSupabaseData();
-                    setupRealtime(); // Menjalankan fungsi realtime SATU KALI saat berhasil login
+                    setupRealtime(); 
                     showToast("Selamat Datang di Master Dashboard Admin", "success");
                 }, 300);
             } else {
@@ -297,7 +297,6 @@
 
         function logout() { location.reload(); }
 
-        // Fungsi Load Data HANYA menarik data, tidak lagi membuat channel realtime baru
         async function loadSupabaseData() {
             try {
                 const { data, error } = await supabaseClient
@@ -316,12 +315,10 @@
             }
         }
 
-        // Fungsi terpisah khusus menangani Realtime (Live Update)
         function setupRealtime() {
             supabaseClient
                 .channel('custom-update-channel')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'pkl_reports' }, (payload) => {
-                    // Ketika ada yang input baru atau dihapus, otomatis tarik data terbaru
                     loadSupabaseData();
                 })
                 .subscribe();
@@ -403,7 +400,6 @@
             }
         }
 
-        // --- SISTEM PELACAK PDF PINTAR BARU ---
         async function viewDetail(index) {
             const item = currentFilteredData[index];
             document.getElementById('detail-id').innerText = `REF: ${item.ref_id || '-'}`;
@@ -419,7 +415,6 @@
             const pdfContainer = document.getElementById('detail-pdf-container');
             pdfContainer.innerHTML = '';
 
-            // Buka modal
             const modal = document.getElementById('admin-modal');
             const content = document.getElementById('modal-content');
             modal.classList.remove('hidden');
@@ -429,7 +424,6 @@
                 content.classList.add('scale-100', 'opacity-100');
             }, 10);
 
-            // Deteksi cerdas: Gabungkan pdf_urls (multi dari 844 data) dan pdf_url (single dari form baru)
             let urlsToDisplay = [];
             if (item.pdf_urls) {
                 urlsToDisplay = item.pdf_urls.split(',').map(u => u.trim()).filter(u => u);
@@ -437,11 +431,10 @@
                 urlsToDisplay = [item.pdf_url.trim()];
             }
 
-            // Render PDF
             if (urlsToDisplay.length > 0) {
                 urlsToDisplay.forEach((cleanUrl, i) => {
                     let fileName = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
-                    try { fileName = decodeURIComponent(fileName); } catch(e) {} // Rapihkan nama file jika ada karakter unik
+                    try { fileName = decodeURIComponent(fileName); } catch(e) {} 
                     
                     pdfContainer.innerHTML += `
                         <div class="flex flex-col w-full bg-white p-2 rounded-xl border border-slate-200 shadow-sm gap-2 mb-3">
@@ -479,14 +472,62 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        async function deleteCloudRow(id) {
-            if(confirm("Apakah Anda yakin ingin menghapus data ini dari cloud secara permanen?")) {
+        async function deleteCloudRow(refId) {
+            if(confirm("Apakah Anda yakin ingin menghapus data ini beserta file PDF dokumentasinya dari cloud secara permanen?")) {
                 try {
-                    const { error } = await supabaseClient.from('pkl_reports').delete().eq('ref_id', id);
-                    if (error) throw error;
-                    showToast("Data berhasil dihapus dari Supabase", "success");
+                    // 1. Ambil informasi data untuk mengetahui link/nama file PDF
+                    const { data: itemData, error: fetchError } = await supabaseClient
+                        .from('pkl_reports')
+                        .select('pdf_url, pdf_urls')
+                        .eq('ref_id', refId)
+                        .single();
+
+                    if (fetchError) throw fetchError;
+
+                    // 2. Ekstrak nama file dari URL
+                    let filesToDelete = [];
+                    
+                    if (itemData) {
+                        let urls = [];
+                        if (itemData.pdf_urls) {
+                            urls = itemData.pdf_urls.split(',').map(u => u.trim());
+                        } else if (itemData.pdf_url) {
+                            urls = [itemData.pdf_url.trim()];
+                        }
+
+                        urls.forEach(url => {
+                            if (url) {
+                                const fileName = url.substring(url.lastIndexOf('/') + 1);
+                                if (fileName) filesToDelete.push(decodeURIComponent(fileName));
+                            }
+                        });
+                    }
+
+                    // 3. Hapus file PDF dari Bucket Storage 'dokumentasi'
+                    if (filesToDelete.length > 0) {
+                        const { error: storageError } = await supabaseClient
+                            .storage
+                            .from('dokumentasi')
+                            .remove(filesToDelete);
+
+                        if (storageError) {
+                            console.warn("Gagal menghapus beberapa file dari Storage:", storageError.message);
+                        }
+                    }
+
+                    // 4. Hapus baris data dari database
+                    const { error: dbError } = await supabaseClient
+                        .from('pkl_reports')
+                        .delete()
+                        .eq('ref_id', refId);
+
+                    if (dbError) throw dbError;
+
+                    showToast("Data dan file PDF berhasil dihapus permanen dari Supabase", "success");
                     loadSupabaseData();
+
                 } catch (err) {
+                    console.error(err);
                     showToast("Gagal menghapus: " + err.message, "error");
                 }
             }
