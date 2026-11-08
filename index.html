@@ -377,7 +377,7 @@
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center space-x-2">
                             <button onclick="viewDetail(${index})" class="p-2 bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg transition-all" title="Lihat Detail"><i data-lucide="eye" class="w-4 h-4"></i></button>
-                            <button onclick="deleteCloudRow('${item.id}')" class="p-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <button onclick="deleteCloudRow('${item.ref_id}')" class="p-2 bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-all" title="Hapus Data"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </td>
                 `;
@@ -477,7 +477,7 @@
         async function deleteCloudRow(id) {
             if(confirm("Apakah Anda yakin ingin menghapus data ini dari cloud secara permanen?")) {
                 try {
-                    const { error } = await supabaseClient.from('pkl_reports').delete().eq('id', id);
+                    const { error } = await supabaseClient.from('pkl_reports').delete().eq('ref_id', id);
                     if (error) throw error;
                     showToast("Data berhasil dihapus dari Supabase", "success");
                     loadSupabaseData();
