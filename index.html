@@ -18,14 +18,14 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
-        .glass-panel { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.8); }
         
-        .watermark-bg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; max-width: 800px; opacity: 0.15; pointer-events: none; z-index: 0; filter: grayscale(20%); }
+        /* OPTIMASI 1: Menghilangkan blur berlebihan agar tidak berat di Laptop/GPU (Lag-free) */
+        .glass-panel { background: rgba(255, 255, 255, 0.96); border: 1px solid rgba(226, 232, 240, 0.8); }
         
-        @keyframes blob { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
-        .animate-blob { animation: blob 8s infinite; }
-        .animation-delay-2000 { animation-delay: 2s; }
-        .animation-delay-4000 { animation-delay: 4s; }
+        .watermark-bg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75vw; max-width: 800px; opacity: 0.12; pointer-events: none; z-index: 0; filter: grayscale(20%); }
+        
+        /* OPTIMASI 2: Mematikan pergerakan animasi bola background agar laptop tidak patah-patah */
+        .animate-blob { display: none; }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-track { background: #f1f5f9; } ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
@@ -126,9 +126,10 @@
                     <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                         <select id="filter-kategori" onchange="filterTable()" class="w-full sm:w-40 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-bold text-slate-700 transition-all outline-none shadow-sm cursor-pointer">
                             <option value="">Semua Kategori</option>
-                            <option value="bangli">BANGLI</option>
-                            <option value="pkl">PKL</option>
-                            <option value="spanduk, baliho dan tali-talian">SPANDUK & BALIHO</option>
+                            <!-- OPTIMASI 3: Value disamakan hurufnya dengan input agar filter berfungsi -->
+                            <option value="BANGLI">BANGLI</option>
+                            <option value="PKL">PKL</option>
+                            <option value="Spanduk, Baliho dan Tali-talian">SPANDUK & BALIHO</option>
                         </select>
                         
                         <select id="filter-wilayah" onchange="filterTable()" class="w-full sm:w-40 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-600 text-[11px] font-bold text-slate-700 transition-all outline-none shadow-sm cursor-pointer">
@@ -443,7 +444,13 @@
                                     <div class="bg-emerald-100 p-1.5 rounded-md text-emerald-700 shrink-0"><i data-lucide="file-check-2" class="w-4 h-4"></i></div>
                                     <span class="text-[10px] font-extrabold text-slate-600 truncate" title="${fileName}">Dokumen ${i + 1}</span>
                                 </div>
-                                <a href="${cleanUrl}" target="_blank" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[10px] font-bold shadow-sm shrink-0">Buka Tab Baru</a>
+                                <!-- OPTIMASI 4: Tombol Unduh PDF Direct ditambahkan -->
+                                <div class="flex items-center gap-2">
+                                    <a href="${cleanUrl}" target="_blank" download class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-bold shadow-sm shrink-0 flex items-center gap-1">
+                                        <i data-lucide="download" class="w-3 h-3"></i> Unduh
+                                    </a>
+                                    <a href="${cleanUrl}" target="_blank" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[10px] font-bold shadow-sm shrink-0">Buka Tab Baru</a>
+                                </div>
                             </div>
                             <iframe src="${cleanUrl}" class="w-full h-48 rounded-lg border border-slate-200 bg-slate-100"></iframe>
                         </div>
